@@ -104,7 +104,7 @@ select{width:100%;font:inherit;font-size:1.05rem;padding:11px 12px;border:1px so
 details.info{margin:6px 0 10px;font-size:.93rem;color:var(--inkt-zacht)}
 details.info summary{cursor:pointer;color:var(--groen-donker);display:inline-flex;align-items:center;gap:6px;min-height:28px;list-style:none}
 details.info summary::-webkit-details-marker{display:none}
-details.info summary::before{content:"i";display:inline-grid;place-items:center;width:20px;height:20px;border:1.5px solid currentColor;border-radius:50%;font:italic 700 12px/1 Georgia,serif}
+details.info summary::before{content:"i"/"";display:inline-grid;place-items:center;width:20px;height:20px;border:1.5px solid currentColor;border-radius:50%;font:italic 700 12px/1 Georgia,serif}
 details.info[open] summary{margin-bottom:4px}
 details.info p,details.info ul{margin:.4rem 0}
 .uitklap[hidden]{display:none}
@@ -124,8 +124,9 @@ details.info p,details.info ul{margin:.4rem 0}
 .posten div{display:flex;justify-content:space-between;gap:12px;border-bottom:1px solid var(--lijn);padding:8px 0}
 .posten dt{color:var(--inkt)}
 .posten dd{margin:0;color:var(--groen-donker);font-variant-numeric:tabular-nums;white-space:nowrap;font-weight:600}
-.posten .kop{border-bottom:0;padding-top:16px}
-.posten .kop dt{font-weight:700;text-transform:uppercase;font-size:.82rem;letter-spacing:.04em;color:var(--inkt-zacht)}
+.posten dl{margin:0}
+.posten .subkop{font-weight:700;text-transform:uppercase;font-size:.82rem;letter-spacing:.04em;color:var(--inkt-zacht);margin:16px 0 0;padding:8px 0 0}
+.posten .subkop:first-child{margin-top:0}
 .totalen{display:flex;flex-direction:column;gap:12px}
 .blok{border:1px solid var(--lijn);border-radius:var(--radius);padding:12px 14px;text-align:right}
 .blok .l{display:block;font-size:.95rem}
@@ -220,6 +221,7 @@ dialog::backdrop{background:rgba(0,0,0,.45)}
   </div>
 </header>
 
+<div id="srStatus" class="sr-only" role="status" aria-live="polite" aria-atomic="true"></div>
 <main id="inhoud" tabindex="-1">
 <div class="wrap">
 
@@ -249,7 +251,7 @@ dialog::backdrop{background:rgba(0,0,0,.45)}
         <p>Hier tonen we de vraagprijs van de woning. Als de vraagprijs bekend is, wordt deze automatisch getoond en kunt u deze eventueel aanpassen (b.v. bij een lager of hoger bod).</p>
         <p>Wilt u weten wat uw maandlasten worden bij een specifiek leenbedrag? Vul dan het gewenste bedrag in.</p>
       </details>
-      <div class="euro" id="vraagprijsWrap"><span aria-hidden="true">€</span><input id="vraagprijs" class="bedrag" inputmode="numeric" autocomplete="off" required aria-required="true" aria-describedby="vraagprijsFout"></div>
+      <div class="euro" id="vraagprijsWrap"><span aria-hidden="true">€</span><input id="vraagprijs" class="bedrag" inputmode="numeric" autocomplete="off" required aria-required="true"></div>
       <p class="veldfout" id="vraagprijsFout" hidden>Vul de vraagprijs van de woning in.</p>
     </div>
     <p class="verplicht-uitleg"><span class="verplicht" aria-hidden="true">*</span> verplicht veld</p>
@@ -275,8 +277,8 @@ dialog::backdrop{background:rgba(0,0,0,.45)}
         <legend class="vraag">Gaat u verbouwen?</legend>
         <details class="info"><summary>Uitleg verbouwen</summary><p>Als u gaat verbouwen kunt u in sommige gevallen een deel van de verbouwingskosten mee laten financieren in de hypotheek.</p></details>
         <div class="seg">
-          <label><input type="radio" name="verbouwen" value="ja"><span class="knop">Ja</span></label>
-          <label><input type="radio" name="verbouwen" value="nee" checked><span class="knop">Nee</span></label>
+          <label><input type="radio" name="verbouwen" value="ja" aria-label="Ja"><span class="knop" aria-hidden="true">Ja</span></label>
+          <label><input type="radio" name="verbouwen" value="nee" checked aria-label="Nee"><span class="knop" aria-hidden="true">Nee</span></label>
         </div>
       </fieldset>
       <div class="uitklap" id="verbouwenUit" hidden>
@@ -298,8 +300,8 @@ dialog::backdrop{background:rgba(0,0,0,.45)}
           <p>U kunt het tekort aanvullen met eigen geld. Ook kunt u een deel van de woning met eigen middelen betalen. Dit kan invloed op de hoogte van de rente die u moet betalen.</p>
         </details>
         <div class="seg">
-          <label><input type="radio" name="eigengeld" value="ja"><span class="knop">Ja</span></label>
-          <label><input type="radio" name="eigengeld" value="nee" checked><span class="knop">Nee</span></label>
+          <label><input type="radio" name="eigengeld" value="ja" aria-label="Ja"><span class="knop" aria-hidden="true">Ja</span></label>
+          <label><input type="radio" name="eigengeld" value="nee" checked aria-label="Nee"><span class="knop" aria-hidden="true">Nee</span></label>
         </div>
       </fieldset>
       <div class="uitklap" id="eigengeldUit" hidden>
@@ -309,7 +311,7 @@ dialog::backdrop{background:rgba(0,0,0,.45)}
         </div>
       </div>
 
-      <div id="meldingenStap2" aria-live="polite"></div>
+      <div id="meldingenStap2"></div>
 
       <div class="veld">
         <label for="energielabel">Wat is het energielabel van de woning?</label>
@@ -329,8 +331,8 @@ dialog::backdrop{background:rgba(0,0,0,.45)}
           <p>Voor een hypotheek met NHG gelden een aantal voorwaarden. De huidige kostengrens is <span class="nhgGrens"></span>. Dit is het maximale bedrag dat u met NHG kunt lenen om de woning te financieren. Dit bedrag is inclusief bijkomende kosten, zoals notariskosten, borgtochtprovisie en overdrachtsbelasting.</p>
         </details>
         <div class="seg">
-          <label><input type="radio" name="nhg" value="ja"><span class="knop">Ja</span></label>
-          <label><input type="radio" name="nhg" value="nee" checked><span class="knop">Nee</span></label>
+          <label><input type="radio" name="nhg" value="ja" aria-label="Ja"><span class="knop" aria-hidden="true">Ja</span></label>
+          <label><input type="radio" name="nhg" value="nee" checked aria-label="Nee"><span class="knop" aria-hidden="true">Nee</span></label>
         </div>
       </fieldset>
       <p class="melding info" id="nhgNiet" hidden>NHG is niet mogelijk: de hoofdsom of de woningwaarde ligt boven de kostengrens van <span class="nhgGrens"></span>.</p>
@@ -357,9 +359,9 @@ dialog::backdrop{background:rgba(0,0,0,.45)}
           <p>Ontvangt u nu AOW/pensioen of gaat u binnen 10,5 jaar na de datum van het moment van aanvragen met pensioen? En wilt u verhuizen van de ene koopwoning naar de andere? Dan kunt u misschien meer lenen dan hier wordt getoond. Vraag uw adviseur naar de specifieke voorwaarden.</p>
         </details>
         <div class="datum" id="datumWrap">
-          <div><label for="gebDag">Dag</label><input id="gebDag" inputmode="numeric" maxlength="2" autocomplete="bday-day" placeholder="DD" aria-describedby="datumFout"></div>
-          <div><label for="gebMaand">Maand</label><input id="gebMaand" inputmode="numeric" maxlength="2" autocomplete="bday-month" placeholder="MM" aria-describedby="datumFout"></div>
-          <div><label for="gebJaar">Jaar</label><input id="gebJaar" class="jaar" inputmode="numeric" maxlength="4" autocomplete="bday-year" placeholder="JJJJ" aria-describedby="datumFout"></div>
+          <div><label for="gebDag">Dag</label><input id="gebDag" aria-required="true" inputmode="numeric" maxlength="2" autocomplete="bday-day" placeholder="DD"></div>
+          <div><label for="gebMaand">Maand</label><input id="gebMaand" aria-required="true" inputmode="numeric" maxlength="2" autocomplete="bday-month" placeholder="MM"></div>
+          <div><label for="gebJaar">Jaar</label><input id="gebJaar" class="jaar" aria-required="true" inputmode="numeric" maxlength="4" autocomplete="bday-year" placeholder="JJJJ"></div>
         </div>
         <p class="veldfout" id="datumFout" hidden>Vul een geldige geboortedatum in (bijvoorbeeld 01 03 1990).</p>
       </fieldset>
@@ -372,15 +374,15 @@ dialog::backdrop{background:rgba(0,0,0,.45)}
           <p>Ondernemers voor de inkomstenbelasting en directeur-grootaandeelhouders hebben een Inkomensverklaring voor ondernemers (IKV) nodig. De IKV geeft een financieel overzicht van de onderneming en de toegepaste correcties met als uitkomst het ondernemersinkomen. Dit inkomen neemt MUNT volledig mee in het toetsinkomen.</p>
           <p>De IKV moet opgemaakt zijn door een rekenexpert die door MUNT is geautoriseerd (zie <a href="https://www.munthypotheken.nl/inkomensverklaring" target="_blank" rel="noopener">munthypotheken.nl/inkomensverklaring<span class="sr-only"> (opent in nieuw venster)</span></a>) en mag op de datum van het hypotheekaanbod niet ouder zijn dan 6 maanden. De expert deelt u of uw klant mee welke documenten nodig zijn om het ondernemersinkomen te berekenen.</p>
         </details>
-        <div class="euro" id="inkomenWrap"><span aria-hidden="true">€</span><input id="inkomen" class="bedrag" inputmode="numeric" autocomplete="off" required aria-required="true" aria-describedby="inkomenFout"></div>
+        <div class="euro" id="inkomenWrap"><span aria-hidden="true">€</span><input id="inkomen" class="bedrag" inputmode="numeric" autocomplete="off" required aria-required="true"></div>
         <p class="veldfout" id="inkomenFout" hidden>Vul uw bruto jaarinkomen in.</p>
       </div>
 
       <fieldset>
         <legend class="vraag">Heeft u een partner?</legend>
         <div class="seg">
-          <label><input type="radio" name="partner" value="ja"><span class="knop">Ja</span></label>
-          <label><input type="radio" name="partner" value="nee" checked><span class="knop">Nee</span></label>
+          <label><input type="radio" name="partner" value="ja" aria-label="Ja"><span class="knop" aria-hidden="true">Ja</span></label>
+          <label><input type="radio" name="partner" value="nee" checked aria-label="Nee"><span class="knop" aria-hidden="true">Nee</span></label>
         </div>
       </fieldset>
       <div class="uitklap" id="partnerUit" hidden>
@@ -403,8 +405,8 @@ dialog::backdrop{background:rgba(0,0,0,.45)}
       <fieldset>
         <legend class="vraag">Heeft u schulden of leningen?</legend>
         <div class="seg">
-          <label><input type="radio" name="schulden" value="ja"><span class="knop">Ja</span></label>
-          <label><input type="radio" name="schulden" value="nee" checked><span class="knop">Nee</span></label>
+          <label><input type="radio" name="schulden" value="ja" aria-label="Ja"><span class="knop" aria-hidden="true">Ja</span></label>
+          <label><input type="radio" name="schulden" value="nee" checked aria-label="Nee"><span class="knop" aria-hidden="true">Nee</span></label>
         </div>
       </fieldset>
       <div class="uitklap" id="schuldenUit" hidden>
@@ -433,8 +435,8 @@ dialog::backdrop{background:rgba(0,0,0,.45)}
           </ul>
         </details>
         <div class="seg">
-          <label><input type="radio" name="erfpacht" value="ja"><span class="knop">Ja</span></label>
-          <label><input type="radio" name="erfpacht" value="nee" checked><span class="knop">Nee</span></label>
+          <label><input type="radio" name="erfpacht" value="ja" aria-label="Ja"><span class="knop" aria-hidden="true">Ja</span></label>
+          <label><input type="radio" name="erfpacht" value="nee" checked aria-label="Nee"><span class="knop" aria-hidden="true">Nee</span></label>
         </div>
       </fieldset>
       <div class="uitklap" id="erfpachtUit" hidden>
@@ -448,22 +450,22 @@ dialog::backdrop{background:rgba(0,0,0,.45)}
 
     <div>
       <div data-overzicht></div>
-      <div class="blok haalbaar" id="haalbaarBlok" style="margin-top:12px" aria-live="polite">
-        <span class="l">Financieel haalbaar</span><span class="w" id="maxHyp">–</span>
+      <div class="blok haalbaar" id="haalbaarBlok" style="margin-top:12px">
+        <span class="l">Financieel haalbaar:</span> <span class="w" id="maxHyp">–</span>
         <span class="status" id="haalbaarStatus"></span>
-        <span id="ebvRegel"><span class="l" style="margin-top:6px">Extra ruimte voor EBV</span><span class="w" id="ebv">–</span></span>
+        <span id="ebvRegel"><span class="l" style="margin-top:6px">Extra ruimte voor EBV:</span> <span class="w" id="ebv">–</span></span>
       </div>
     </div>
   </div>
 
-  <div id="meldingenStap3" aria-live="polite" style="margin-top:18px"></div>
+  <div id="meldingenStap3" style="margin-top:18px"></div>
 
   <section class="afm" aria-labelledby="afmKop">
     <h2 id="afmKop" class="sr-only">Uw maandlast (indicatie)</h2>
     <dl>
       <div><dt>Totale lening</dt><dd id="afmLening">–</dd></div>
       <div><dt>Vaste rente</dt><dd id="afmRente">–</dd></div>
-      <div><dt>Maandelijks bedrag</dt><dd id="afmMaand" aria-live="polite">–</dd></div>
+      <div><dt>Maandelijks bedrag</dt><dd id="afmMaand">–</dd></div>
       <div><dt>Looptijd van de lening</dt><dd>360 maanden</dd></div>
       <div><dt>Totaalbedrag</dt><dd id="afmTotaal">–</dd></div>
       <div><dt>Jaarlijks kostenpercentage</dt><dd id="afmJkp">–</dd></div>
@@ -700,26 +702,31 @@ function maxHypotheek(k, rvp){
 /* ============================ Weergave ============================ */
 function overzichtHTML(k){
   return `
+  <h2 class="sr-only">Kostenoverzicht</h2>
   <div class="overzicht">
-    <dl class="posten">
-      <div class="kop"><dt>Kosten aankoop huis</dt><dd></dd></div>
+    <div class="posten">
+      <h3 class="subkop">Kosten aankoop huis</h3>
+      <dl>
       <div><dt>${k.verbouwen && k.gefinVerbouwing>0 ? `Eigen inbreng verbouwing (totale verbouwing ${eur(k.R)})` : "Verbouwing"}</dt><dd>${eur(k.verbouwen ? k.eigenInbrengVerbouwing : 0)}</dd></div>
       <div><dt>Overdrachtsbelasting</dt><dd>${eur(k.ovb)}</dd></div>
       <div><dt>Notariskosten leveringsakte</dt><dd>${eur(CONFIG.notarisLevering)}</dd></div>
-      <div class="kop"><dt>Hypotheekkosten</dt><dd></dd></div>
+      </dl>
+      <h3 class="subkop">Hypotheekkosten</h3>
+      <dl>
       <div><dt>Notariskosten hypotheekakte</dt><dd>${eur(CONFIG.notarisHypotheek)}</dd></div>
       <div><dt>Taxatiekosten + advieskosten</dt><dd>${eur(CONFIG.taxatie+CONFIG.advies)}</dd></div>
       <div><dt>Nationale Hypotheek Garantie</dt><dd>${eur(k.nhgKosten)}</dd></div>
-    </dl>
-    <div class="totalen">
-      <div class="blok"><span class="l">Kosten aankoop huis</span><span class="w">${eur(k.aankoop)}</span></div>
-      <div class="blok"><span class="l">Koopsom</span><span class="w">${eur(k.prijs)}</span></div>
-      <div class="blok"><span class="l">Hypotheekkosten</span><span class="w">${eur(k.hypKosten)}</span></div>
-      <div class="blok groen">
-        <div><span>Totale kosten</span><span>${eur(k.totaal)}</span></div>
-        <div><span>Aftrek eigen geld</span><span>${eur(k.totaal-k.teFinancieren)}</span></div>
+      </dl>
+    </div>
+    <div class="totalen" role="list" aria-label="Totalen">
+      <div class="blok" role="listitem"><span class="l">Kosten aankoop huis:</span> <span class="w">${eur(k.aankoop)}</span></div>
+      <div class="blok" role="listitem"><span class="l">Koopsom:</span> <span class="w">${eur(k.prijs)}</span></div>
+      <div class="blok" role="listitem"><span class="l">Hypotheekkosten:</span> <span class="w">${eur(k.hypKosten)}</span></div>
+      <div class="blok groen" role="listitem">
+        <div><span>Totale kosten:</span> <span>${eur(k.totaal)}</span></div>
+        <div><span>Aftrek eigen geld:</span> <span>${eur(k.totaal-k.teFinancieren)}</span></div>
       </div>
-      <div class="blok fin"><span>Te financieren</span><strong>${eur(k.teFinancieren)}</strong></div>
+      <div class="blok fin" role="listitem"><span>Te financieren:</span> <strong>${eur(k.teFinancieren)}</strong></div>
     </div>
   </div>`;
 }
@@ -727,13 +734,13 @@ function overzichtHTML(k){
 function meldingenStap2(k){
   const box = $("#meldingenStap2"); let h="";
   if(k.overschot>0){
-    h += `<div class="melding fout" role="alert"><strong>De gewenste financiering is niet haalbaar</strong> aangezien u meer leent dan de wettelijk toegestane 100% van de waarde van de woning. Dit kunt u oplossen door de gewenste hoofdsom te verlagen naar ${eur(k.W)}.<br><button type="button" class="btn klein sec" id="fixHoofdsom">Hoofdsom verlagen naar ${eur(k.W)}</button></div>`;
+    h += `<div class="melding fout"><strong>De gewenste financiering is niet haalbaar</strong> aangezien u meer leent dan de wettelijk toegestane 100% van de waarde van de woning. Dit kunt u oplossen door de gewenste hoofdsom te verlagen naar ${eur(k.W)}.<br><button type="button" class="btn klein sec" id="fixHoofdsom">Hoofdsom verlagen naar ${eur(k.W)}</button></div>`;
   } else if(k.tekort>0){
-    h += `<div class="melding fout" role="alert"><strong>De gewenste financiering is niet haalbaar</strong> aangezien de kosten hoger zijn dan de gewenste hoofdsom. Dit kunt u oplossen door ${eur(k.tekort)} eigen geld in te leggen.<br><button type="button" class="btn klein sec" id="fixEigenGeld">${eur(k.tekort)} eigen geld invullen</button></div>`;
+    h += `<div class="melding fout"><strong>De gewenste financiering is niet haalbaar</strong> aangezien de kosten hoger zijn dan de gewenste hoofdsom. Dit kunt u oplossen door ${eur(k.tekort)} eigen geld in te leggen.<br><button type="button" class="btn klein sec" id="fixEigenGeld">${eur(k.tekort)} eigen geld invullen</button></div>`;
   }
   if(box.dataset.h!==h){ box.innerHTML=h; box.dataset.h=h; }
-  const fh=$("#fixHoofdsom"); if(fh) fh.onclick=()=>{ zet($("#hoofdsom"),k.W); update(); $("#hoofdsom").focus(); };
-  const fe=$("#fixEigenGeld"); if(fe) fe.onclick=()=>{ kiesRadio("eigengeld","ja"); zet($("#eigenGeld"),k.tekort); update(); $("#eigenGeld").focus(); };
+  const fh=$("#fixHoofdsom"); if(fh) fh.onclick=()=>{ S.interactie=true; zet($("#hoofdsom"),k.W); update(); $("#hoofdsom").focus(); };
+  const fe=$("#fixEigenGeld"); if(fe) fe.onclick=()=>{ S.interactie=true; kiesRadio("eigengeld","ja"); zet($("#eigenGeld"),k.tekort); update(); $("#eigenGeld").focus(); };
 }
 
 function kiesRadio(name,val){ const el=document.querySelector(`input[name="${name}"][value="${val}"]`); if(el){ el.checked=true; } toonUitklap(); }
@@ -747,9 +754,27 @@ function toonUitklap(){
 
 function bouwRvp(){
   const box=$("#rvpKeuze");
-  box.innerHTML = Object.keys(CONFIG.rentes).map(j=>`<label><input type="radio" name="rvp" value="${j}" ${+j===CONFIG.standaardRvp?"checked":""}><span class="knop"><span>${j} jr</span><span class="rente" data-rvp="${j}"></span></span></label>`).join("");
+  box.innerHTML = Object.keys(CONFIG.rentes).map(j=>`<label><input type="radio" name="rvp" value="${j}" ${+j===CONFIG.standaardRvp?"checked":""}><span class="knop" aria-hidden="true"><span>${j} jr</span><span class="rente" data-rvp="${j}"></span></span></label>`).join("");
 }
 
+/* Schermlezer: vat de uitkomst samen, pas na 1,2 s rust (niet bij elke toetsaanslag) */
+let srTimer=null, srVorige="";
+function kondigAan(tekst){
+  clearTimeout(srTimer);
+  srTimer=setTimeout(()=>{ if(tekst===srVorige) return; srVorige=tekst; const s=$("#srStatus"); s.textContent=""; setTimeout(()=>{ s.textContent=tekst; },50); },1200);
+}
+function samenvatting(k, mh, sch){
+  if(S.stap===2){
+    if(k.overschot>0) return `Let op: u leent meer dan 100% van de woningwaarde. Verlaag de hoofdsom naar ${eur(k.W)}. Onder de vraag over eigen geld staat een knop om dit direct te doen.`;
+    if(k.tekort>0) return `Let op: er is ${eur(k.tekort)} eigen geld nodig. Onder de vraag over eigen geld staat een knop om dit direct in te vullen.`;
+    return `Totale kosten ${eur(k.totaal)}. Te financieren ${eur(k.teFinancieren)}.`;
+  }
+  if(S.stap===3 && mh){
+    const ok = mh.max >= k.teFinancieren;
+    return `Financieel haalbaar ${eur(mh.max)}. Bruto maandlast ${eur(sch.eerste)}. ` + (ok ? "Het te financieren bedrag past binnen uw leenruimte." : `Niet haalbaar: u komt ${eur(k.teFinancieren-mh.max)} tekort.`);
+  }
+  return "";
+}
 let laatste = {};
 function update(){
   toonUitklap();
@@ -798,12 +823,22 @@ function update(){
   $("#resBedrag").textContent = eur(k.teFinancieren);
   $("#resMaand").textContent = eur(sch.eerste);
   laatste = {k, rvp, rente, sch, mh};
+  if(S.interactie){ const z=samenvatting(k,mh,sch); if(z) kondigAan(z); }
 }
 
 /* ============================ Validatie ============================ */
+function koppelFout(input, foutId, toon){
+  const ids = (input.getAttribute("aria-describedby")||"").split(" ").filter(x=>x && x!==foutId);
+  if(toon) ids.push(foutId);
+  if(ids.length) input.setAttribute("aria-describedby", ids.join(" ")); else input.removeAttribute("aria-describedby");
+}
 function veldFout(input, wrap, fout, toon){
-  fout.hidden = !toon; input.setAttribute("aria-invalid", toon ? "true" : "false");
+  fout.hidden = !toon; input.setAttribute("aria-invalid", toon ? "true" : "false"); koppelFout(input, fout.id, toon);
   if(wrap) wrap.classList.toggle("ongeldig", toon);
+}
+function toonDatumFout(toon){
+  $("#datumFout").hidden = !toon; $("#datumWrap").classList.toggle("ongeldig",toon);
+  ["#gebDag","#gebMaand","#gebJaar"].forEach(s=>{ $(s).setAttribute("aria-invalid",toon?"true":"false"); koppelFout($(s),"datumFout",toon); });
 }
 function valideer(stap){
   if(stap===1){
@@ -819,8 +854,7 @@ function valideer(stap){
   if(stap===3){
     let ok=true, eerste=null;
     const geb = geboortedatum();
-    $("#datumFout").hidden = !!geb; $("#datumWrap").classList.toggle("ongeldig",!geb);
-    ["#gebDag","#gebMaand","#gebJaar"].forEach(s=>$(s).setAttribute("aria-invalid",geb?"false":"true"));
+    toonDatumFout(!geb);
     if(!geb){ ok=false; eerste=$("#gebDag"); }
     const ink = getal($("#inkomen"))>0;
     veldFout($("#inkomen"),$("#inkomenWrap"),$("#inkomenFout"),!ink);
@@ -859,6 +893,7 @@ function gaNaar(n){
   toonStap(n);
 }
 function toonStap(n, stil){
+  S.interactie=false; clearTimeout(srTimer); srVorige="";
   S.stap=n; S.verst=Math.max(S.verst,Math.min(n,4));
   $$(".stap").forEach(s=>s.hidden = +s.dataset.stap!==n);
   $("#voortgangBalk").hidden = n===0;
@@ -1001,15 +1036,18 @@ function init(){
   $$(".tariefDatum").forEach(e=>e.textContent=CONFIG.tariefDatum);
   $$(".nhgGrens").forEach(e=>e.textContent=eur(CONFIG.nhgKostengrens));
   $$("input.bedrag").forEach(el=>{
+    const lab=document.querySelector(`label[for="${el.id}"]`);
+    if(lab && !lab.querySelector(".sr-euro")){ const s=document.createElement("span"); s.className="sr-only sr-euro"; s.textContent=" (bedrag in euro)"; const ster=lab.querySelector(".verplicht"); if(ster) lab.insertBefore(s,ster); else lab.appendChild(s); }
     el.addEventListener("input",()=>{ formatteerVeld(el);
       if(el.id==="verbouwKosten" && !S.waardeNaHandmatig){ const k=getal($("#vraagprijs")), r=getal(el); zet($("#waardeNa"), r ? k + CONFIG.waardestijgingVerbouwing*r : 0); }
       if(el.id==="waardeNa") S.waardeNaHandmatig = true;
       if(el.id==="vraagprijs" && S.verst<2) $("#hoofdsom").value="";
-      if(el.getAttribute("aria-invalid")==="true" && getal(el)) { el.setAttribute("aria-invalid","false"); const f=document.getElementById(el.id+"Fout"); if(f) f.hidden=true; const w=document.getElementById(el.id+"Wrap"); if(w) w.classList.remove("ongeldig"); }
+      if(el.getAttribute("aria-invalid")==="true" && getal(el)) { const f=document.getElementById(el.id+"Fout"); if(f) veldFout(el, document.getElementById(el.id+"Wrap"), f, false); }
       update(); });
   });
-  ["#gebDag","#gebMaand","#gebJaar"].forEach(s=>$(s).addEventListener("input",e=>{ e.target.value=e.target.value.replace(/\D/g,""); update(); }));
-  document.addEventListener("change",e=>{ if(e.target.matches("input[type=radio],select")) update(); });
+  ["#gebDag","#gebMaand","#gebJaar"].forEach(s=>$(s).addEventListener("input",e=>{ e.target.value=e.target.value.replace(/\D/g,""); if(!$("#datumFout").hidden && geboortedatum()) toonDatumFout(false); update(); }));
+  document.addEventListener("change",e=>{ if(e.target.matches("input[type=radio],select")) { S.interactie=true; update(); } });
+  document.addEventListener("input",e=>{ if(e.target.matches("input")) S.interactie=true; }, true);
   document.addEventListener("click",e=>{ const b=e.target.closest("[data-ga]"); if(b){ e.preventDefault(); gaNaar(+b.dataset.ga); } });
   $("#pijlTerug").addEventListener("click",()=>gaNaar(S.stap===5?4:S.stap-1));
   $("#pijlVerder").addEventListener("click",()=>gaNaar(S.stap+1));
