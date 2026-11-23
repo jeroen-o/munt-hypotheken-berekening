@@ -46,7 +46,7 @@ h2{font-size:1.15rem;margin:0 0 .75rem}
 .pijl svg{width:18px;height:18px}
 .stappen{flex:1;list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(4,1fr);counter-reset:s}
 .stappen li{position:relative;text-align:center;padding-top:26px}
-.stappen li::before{content:"";position:absolute;top:31px;left:-50%;width:100%;height:4px;background:#9aa3a5}
+.stappen li::before{content:"";position:absolute;top:31px;left:-50%;width:100%;height:4px;background:#7d8689}
 .stappen li:first-child::before{display:none}
 .stappen li.klaar::before,.stappen li.actief::before{background:var(--groen)}
 .stappen .stip{position:absolute;top:26px;left:50%;width:14px;height:14px;margin-left:-7px;border-radius:50%;background:#6d777a;z-index:1}
@@ -176,8 +176,8 @@ dialog::backdrop{background:rgba(0,0,0,.45)}
 
 /* ---------- Responsief ---------- */
 @media (max-width:900px){
-  .grid{grid-template-columns:1fr}
-  .overzicht{grid-template-columns:1fr}
+  .grid{grid-template-columns:minmax(0,1fr)}
+  .overzicht{grid-template-columns:minmax(0,1fr)}
   .afm dl{grid-template-columns:1fr 1fr}
   .afm dl div{border-left:0;border-top:1px solid var(--lijn)}
   .afm dl div:nth-child(-n+2){border-top:0}
@@ -858,14 +858,14 @@ function gaNaar(n){
   }
   toonStap(n);
 }
-function toonStap(n){
+function toonStap(n, stil){
   S.stap=n; S.verst=Math.max(S.verst,Math.min(n,4));
   $$(".stap").forEach(s=>s.hidden = +s.dataset.stap!==n);
   $("#voortgangBalk").hidden = n===0;
   update(); tekenVoortgang();
   const h = document.querySelector(`.stap[data-stap="${n}"] h1`);
   window.scrollTo(0,0);
-  if(h) h.focus({preventScroll:true});
+  if(h && !stil) h.focus({preventScroll:true});
   document.title = (n===0 ? "" : (n===5 ? "Hoe nu verder – " : `Stap ${Math.min(n,4)} van 4: ${STAPNAMEN[Math.min(n,4)-1]} – `)) + "MUNT Hypotheken – Hypotheekberekening";
 }
 
@@ -902,6 +902,7 @@ ul{padding-left:20px}.klein{font-size:12px;color:#4d5a5f}.knop{position:fixed;ri
 @media print{.knop{display:none}body{padding:0}h2{break-after:avoid}.pb{break-before:page}}
 </style></head><body>
 <button class="knop" onclick="window.print()">Afdrukken / opslaan als PDF</button>
+<main>
 <div class="kop"><div><h1>Uw persoonlijke hypotheekberekening</h1><div>${datum}</div></div><div><strong>MUNT</strong> HYPOTHEKEN</div></div>
 <div class="kern"><div>Hypotheekbedrag<strong>${eur(k.teFinancieren)}</strong></div><div>Bruto maandlast<strong>${eur(sch.eerste)}</strong></div></div>
 
@@ -945,7 +946,7 @@ ${CONFIG.ebv[$("#energielabel").value] ? `<tr><td>Extra ruimte voor EBV</td><td>
 </tbody></table>
 
 <h2>Uw maandlast (indicatie)</h2>
-<div class="breed"><table><thead><tr><th>Totale lening</th><th>Vaste rente</th><th>Jaarlijks kostenpercentage</th><th>Bruto maandbedrag</th><th>Looptijd van de lening</th><th>Totaalbedrag</th></tr></thead>
+<div class="breed" tabindex="0" role="region" aria-label="Uw maandlast, scrollbare tabel"><table><thead><tr><th>Totale lening</th><th>Vaste rente</th><th>Jaarlijks kostenpercentage</th><th>Bruto maandbedrag</th><th>Looptijd van de lening</th><th>Totaalbedrag</th></tr></thead>
 <tbody><tr><td>${eur(k.teFinancieren)}</td><td>${pct(rente)}</td><td>${pct(r2(effectief(rente)))}</td><td>${eur(sch.eerste,2)}</td><td>360 maanden</td><td>${eur(sch.totaal,2)}</td></tr></tbody></table></div>
 <p class="klein">Dit betreft een annuïteitenhypotheek met een rentevaste periode van ${rvp} jaar waarbij de aanname is gedaan dat de rente gedurende de looptijd van 360 maanden vast staat. De getoonde maandlast is de bruto maandlast. Hoogstwaarschijnlijk heeft u recht op hypotheekrenteaftrek. Uw hypotheekadviseur kan voor u de netto maandlasten berekenen.</p>
 <p class="klein">Notariskosten, taxatiekosten en advieskosten die we gebruiken in deze voorbeeldberekening zijn gemiddelden. De daadwerkelijke kosten kunnen hiervan afwijken. Daarom zijn deze bij de bepaling van het jaarlijks kostenpercentage (JKP) niet meegenomen. Het JKP bestaat uitsluitend uit de effectieve rente die u aan MUNT Hypotheken zou betalen, als u een hypotheek bij ons zou krijgen.</p>
@@ -954,7 +955,7 @@ ${CONFIG.ebv[$("#energielabel").value] ? `<tr><td>Extra ruimte voor EBV</td><td>
 <h2 class="pb">Verloop restschuld en maandlasten (indicatie)</h2>
 <p>Hoeveel betaalt u eigenlijk aan rente en aflossing per maand tijdens de looptijd van uw hypotheek?</p>
 <p class="klein">Dit betreft een annuïteitenhypotheek met een rentevaste periode van ${rvp} jaar, waarbij de aanname is gedaan dat de rente gedurende de looptijd van 360 maanden vast staat. Natuurlijk dient dit overzicht alleen als indicatie en zijn de getallen daarin alleen van toepassing als er de komende 30 jaar niets verandert. Dat komt niet zo heel vaak voor.</p>
-<div class="breed"><table><thead><tr><th>Jaar</th><th>Schuldrest</th><th>Rente</th><th>Rentelast</th><th>Aflossing</th><th>Bruto maandlast</th></tr></thead>
+<div class="breed" tabindex="0" role="region" aria-label="Verloop restschuld, scrollbare tabel"><table><thead><tr><th>Jaar</th><th>Schuldrest</th><th>Rente</th><th>Rentelast</th><th>Aflossing</th><th>Bruto maandlast</th></tr></thead>
 <tbody>${rijen.join("")}
 <tr class="tot"><td>Totaal</td><td></td><td></td><td>${eur(sch.totRente,2)}</td><td>${eur(k.teFinancieren)}</td><td>${eur(sch.totaal,2)}</td></tr>
 </tbody></table></div>
@@ -983,6 +984,7 @@ ${CONFIG.ebv[$("#energielabel").value] ? `<tr><td>Extra ruimte voor EBV</td><td>
 <li>U loopt het risico een schuld over te houden als de opbrengst van de verkoop van uw huis lager is dan uw hypotheekschuld.</li>
 </ul>
 <p class="klein">Deze hypotheekberekening wordt u aangeboden door MUNT Hypotheken, Bezuidenhoutseweg 16B, 2594 AV Den Haag. Rentetarieven en normen per ${CONFIG.tariefDatum}. Een rekentool van de Nationale Hypotheekbond.</p>
+</main>
 <script>setTimeout(function(){window.focus();window.print();},400)<\/script>
 </body></html>`;
 }
@@ -1018,7 +1020,7 @@ function init(){
   // Vraagprijs via URL (?vraagprijs=350000), voor koppeling vanuit woningpagina
   const q = new URLSearchParams(location.search).get("vraagprijs");
   if(q && /^\d+$/.test(q)) zet($("#vraagprijs"), +q);
-  toonStap(0);
+  toonStap(0, true);   // bij laden geen focus verplaatsen: skiplink blijft eerste tabstop
 }
 init();
 </script>
