@@ -27,5 +27,5 @@ Gekalibreerd tegen de live rekentool (23-11-2026). Uitkomsten zijn op ~3.000 tes
 - Alles bedienbaar met het toetsenbord: echte radio-knoppen, `<details>` in plaats van tooltips, geen enkelcijferige datumvakjes
 - Focus springt naar de kop van de stap. De voortgang staat in een `<ol>` met `aria-current`
 - Contrast AA: merkgroen alleen als vlak met donkere tekst, groene tekst in `#006b4c`
-- Foutmeldingen zijn gekoppeld via `aria-describedby`/`aria-invalid`, met hersteltknop
+- Foutmeldingen zijn gekoppeld via `aria-describedby`/`aria-invalid`, met herstelknop
 - Responsive vanaf 320px, doelgrootte ≥ 44px, ondersteunt `prefers-reduced-motion`
