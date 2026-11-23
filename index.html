@@ -1,0 +1,1026 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MUNT Hypotheken – Hypotheekberekening</title>
+<meta name="description" content="Bereken in vier stappen uw totale kosten, of u het bedrag kunt lenen en uw voorbeeld-renteaanbod bij MUNT Hypotheken.">
+<style>
+:root{
+  --groen:#00d796;          /* MUNT-merkgroen: alleen als vlak/accent, nooit als tekstkleur op wit */
+  --groen-donker:#006b4c;   /* tekst/actieve staat op wit: contrast 6,6:1 */
+  --groen-licht:#e6fbf4;
+  --inkt:#1f2a2e;           /* hoofdtekst: 14:1 */
+  --inkt-zacht:#4d5a5f;     /* secundaire tekst: 7:1 */
+  --lijn:#c9d1d3;
+  --vlak:#f2f3f1;
+  --wit:#ffffff;
+  --fout:#b3261e;
+  --fout-vlak:#fdecea;
+  --let-op:#7a4b00;
+  --let-op-vlak:#fff4df;
+  --donker-blok:#3f4a4e;    /* 'Financieel haalbaar'-blok, wit erop: 9:1 */
+  --focus:#1d3459;
+  --radius:6px;
+  color-scheme: light;
+}
+*,*::before,*::after{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--wit);color:var(--inkt);font:16px/1.5 "Open Sans","Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+a{color:var(--groen-donker)}
+a:hover{text-decoration-thickness:2px}
+:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
+.sr-only{position:absolute!important;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+.skip{position:absolute;left:8px;top:-60px;background:var(--focus);color:#fff;padding:10px 16px;border-radius:var(--radius);z-index:100;text-decoration:none}
+.skip:focus{top:8px}
+h1{font-size:1.6rem;line-height:1.25;text-transform:uppercase;letter-spacing:.01em;margin:0 0 1.25rem}
+h1:focus{outline:none}
+h2{font-size:1.15rem;margin:0 0 .75rem}
+.wrap{max-width:1180px;margin:0 auto;padding:0 16px}
+
+/* ---------- Voortgang ---------- */
+.voortgang{background:var(--vlak);border-bottom:1px solid #dcdedb}
+.voortgang .wrap{display:flex;align-items:center;gap:12px;padding-top:14px;padding-bottom:14px}
+.pijl{flex:0 0 44px;height:44px;border:0;border-radius:var(--radius);background:var(--groen);color:#062a1d;cursor:pointer;display:grid;place-items:center}
+.pijl[hidden]{display:block;visibility:hidden}
+.pijl svg{width:18px;height:18px}
+.stappen{flex:1;list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(4,1fr);counter-reset:s}
+.stappen li{position:relative;text-align:center;padding-top:26px}
+.stappen li::before{content:"";position:absolute;top:31px;left:-50%;width:100%;height:4px;background:#9aa3a5}
+.stappen li:first-child::before{display:none}
+.stappen li.klaar::before,.stappen li.actief::before{background:var(--groen)}
+.stappen .stip{position:absolute;top:26px;left:50%;width:14px;height:14px;margin-left:-7px;border-radius:50%;background:#6d777a;z-index:1}
+.stappen li.klaar .stip,.stappen li.actief .stip{background:var(--groen)}
+.stappen li.actief .stip{box-shadow:0 0 0 4px var(--wit),0 0 0 6px var(--groen-donker)}
+.stappen button,.stappen span.lbl{position:absolute;top:0;left:0;right:0;font:inherit;font-size:.82rem;background:none;border:0;padding:0 2px;color:var(--inkt-zacht);cursor:default;line-height:1.3;min-height:24px}
+.stappen li.klaar button{color:var(--groen-donker);cursor:pointer;text-decoration:underline;text-underline-offset:2px}
+.stappen li.actief .lbl{color:var(--inkt);font-weight:700}
+.stap-teller{display:none;font-size:.9rem;color:var(--inkt-zacht);margin:0 0 .25rem}
+
+main{padding:28px 0 40px}
+.stap[hidden]{display:none}
+
+/* ---------- Start ---------- */
+.kaarten{list-style:none;padding:0;margin:0 0 28px;display:grid;grid-template-columns:repeat(4,1fr);gap:20px}
+.kaarten li{text-align:center}
+.kaarten svg{width:120px;height:120px;display:block;margin:0 auto 10px}
+.kaarten strong{display:block}
+.kaarten span{color:var(--inkt-zacht);font-size:.95rem}
+.intro{max-width:760px;margin:0 auto;text-align:center}
+
+/* ---------- Formulier ---------- */
+.grid{display:grid;grid-template-columns:minmax(0,380px) minmax(0,1fr);gap:28px;align-items:start}
+.paneel{border:1px solid var(--lijn);border-radius:var(--radius);padding:20px}
+.veld{margin:0 0 22px}
+.veld:last-child{margin-bottom:0}
+.veld>label,.veld legend,.vraag{display:block;font-size:1.05rem;margin:0 0 8px;padding:0}
+fieldset{border:0;margin:0 0 22px;padding:0;min-width:0}
+.verplicht{color:var(--fout);font-weight:700}
+.euro{display:flex;align-items:stretch;border:1px solid #7f8a8d;border-radius:var(--radius);background:#fff;max-width:100%}
+.euro:focus-within{outline:3px solid var(--focus);outline-offset:2px}
+.euro span{padding:0 4px 0 12px;display:flex;align-items:center;color:var(--inkt-zacht)}
+.euro input,.tekst{flex:1;min-width:0;border:0;padding:11px 12px 11px 4px;font:inherit;font-size:1.05rem;background:transparent;color:var(--inkt)}
+.euro input:focus,.datum input:focus{outline:none}
+.euro.ongeldig,.datum.ongeldig input{border-color:var(--fout);box-shadow:0 0 0 1px var(--fout)}
+select{width:100%;font:inherit;font-size:1.05rem;padding:11px 12px;border:1px solid #7f8a8d;border-radius:var(--radius);background:#fff;color:var(--inkt)}
+.datum{display:flex;gap:8px;align-items:flex-end}
+.datum div{display:flex;flex-direction:column}
+.datum label{font-size:.85rem;color:var(--inkt-zacht)}
+.datum input{font:inherit;font-size:1.05rem;padding:10px;border:1px solid #7f8a8d;border-radius:var(--radius);width:4.2em;text-align:center}
+.datum input.jaar{width:5.6em}
+.datum input:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
+
+/* Segmented radio's: echte radio-inputs, volledig toetsenbordbedienbaar (pijltjestoetsen) */
+.seg{display:flex;border:1px solid var(--groen-donker);border-radius:var(--radius);overflow:hidden}
+.seg label{flex:1;position:relative;margin:0}
+.seg input{position:absolute;opacity:0;inset:0;margin:0;cursor:pointer}
+.seg .knop{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:44px;padding:6px 4px;color:var(--groen-donker);background:#fff;border-left:1px solid var(--groen-donker);font-size:.95rem;text-align:center;line-height:1.2}
+.seg label:first-child .knop{border-left:0}
+.seg input:checked+.knop{background:var(--groen-donker);color:#fff;font-weight:600}
+.seg input:focus-visible+.knop{outline:3px solid var(--focus);outline-offset:-5px}
+.seg .rente{font-size:.8rem;margin-top:2px}
+.seg.rvp .knop{min-height:58px}
+
+details.info{margin:6px 0 10px;font-size:.93rem;color:var(--inkt-zacht)}
+details.info summary{cursor:pointer;color:var(--groen-donker);display:inline-flex;align-items:center;gap:6px;min-height:28px;list-style:none}
+details.info summary::-webkit-details-marker{display:none}
+details.info summary::before{content:"i";display:inline-grid;place-items:center;width:20px;height:20px;border:1.5px solid currentColor;border-radius:50%;font:italic 700 12px/1 Georgia,serif}
+details.info[open] summary{margin-bottom:4px}
+details.info p,details.info ul{margin:.4rem 0}
+.uitklap[hidden]{display:none}
+.uitklap{border-left:3px solid var(--groen);padding-left:14px;margin:-8px 0 22px}
+
+.melding{border-radius:var(--radius);padding:12px 14px;margin:0 0 18px;font-size:.95rem}
+.melding.fout{background:var(--fout-vlak);border-left:4px solid var(--fout);color:#5c120d}
+.melding.let-op{background:var(--let-op-vlak);border-left:4px solid #c98a00;color:#4a2e00}
+.melding.info{background:var(--groen-licht);border-left:4px solid var(--groen-donker)}
+.melding button{margin-top:8px}
+.veldfout{color:var(--fout);font-size:.9rem;margin:6px 0 0}
+.verplicht-uitleg{font-size:.9rem;color:var(--inkt-zacht);margin:0}
+
+/* ---------- Kostenoverzicht ---------- */
+.overzicht{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,240px);gap:16px 22px;align-items:start}
+.posten{margin:0}
+.posten div{display:flex;justify-content:space-between;gap:12px;border-bottom:1px solid var(--lijn);padding:8px 0}
+.posten dt{color:var(--inkt)}
+.posten dd{margin:0;color:var(--groen-donker);font-variant-numeric:tabular-nums;white-space:nowrap;font-weight:600}
+.posten .kop{border-bottom:0;padding-top:16px}
+.posten .kop dt{font-weight:700;text-transform:uppercase;font-size:.82rem;letter-spacing:.04em;color:var(--inkt-zacht)}
+.totalen{display:flex;flex-direction:column;gap:12px}
+.blok{border:1px solid var(--lijn);border-radius:var(--radius);padding:12px 14px;text-align:right}
+.blok .l{display:block;font-size:.95rem}
+.blok .w{display:block;font-weight:700;color:var(--groen-donker);font-variant-numeric:tabular-nums;font-size:1.05rem}
+.blok.groen{background:var(--groen);border-color:var(--groen);color:#062a1d;text-align:left}
+.blok.groen div{display:flex;justify-content:space-between;gap:8px;font-weight:700;padding:3px 0}
+.blok.fin{background:#5d6669;border-color:#5d6669;color:#fff;display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;font-size:1.1rem;text-align:left}
+.blok.haalbaar{background:var(--donker-blok);border-color:var(--donker-blok);color:#fff}
+.blok.haalbaar .w{color:#fff;font-size:1.35rem}
+.blok.haalbaar.ok{border-left:8px solid var(--groen)}
+.blok.haalbaar.nok{border-left:8px solid #ff8a80}
+.blok .status{display:block;font-size:.9rem;margin-top:4px;font-weight:600}
+
+/* ---------- AFM-tabel ---------- */
+.afm{margin-top:28px;border:1px solid var(--lijn);border-radius:var(--radius);overflow:hidden}
+.afm dl{display:grid;grid-template-columns:repeat(6,1fr);margin:0}
+.afm dl div{display:flex;flex-direction:column;border-left:1px solid var(--lijn)}
+.afm dl div:first-child{border-left:0}
+.afm dt{background:var(--vlak);padding:12px;font-size:.92rem;flex:1}
+.afm dd{margin:0;padding:12px;font-variant-numeric:tabular-nums;font-weight:600}
+.afm ul{margin:0;padding:14px 18px 14px 34px;font-size:.85rem;color:var(--inkt-zacht);border-top:1px solid var(--lijn)}
+.afm li{margin:0 0 4px}
+
+/* ---------- Knoppen ---------- */
+.knoppen{display:flex;justify-content:space-between;gap:16px;margin-top:32px;flex-wrap:wrap}
+.btn{display:inline-flex;align-items:center;justify-content:center;min-width:165px;min-height:46px;padding:10px 22px;border:2px solid var(--groen);border-radius:var(--radius);background:var(--groen);color:#062a1d;font:inherit;font-weight:600;cursor:pointer;text-decoration:none}
+.btn:hover{background:#00c088;border-color:#00c088}
+.btn.sec{background:#fff;color:var(--groen-donker);border-color:var(--groen-donker)}
+.btn.sec:hover{background:var(--groen-licht)}
+.btn.klein{min-width:0;min-height:36px;padding:4px 12px;font-size:.9rem}
+
+/* ---------- Stap 4 ---------- */
+.resultaat{display:flex;flex-direction:column;align-items:center;text-align:center}
+.cirkel{width:min(450px,86vw);aspect-ratio:1;border:1px solid #bbb;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden;position:relative}
+.cirkel .logo{width:50%;margin-top:-26%}
+.cirkel .banden{position:absolute;left:12%;right:12%;bottom:17%}
+.cirkel .banden div{padding:5px 8px;color:#fff;font-size:clamp(.85rem,3.4vw,1rem)}
+.cirkel .banden div:first-child{background:#6f6f6f;clip-path:polygon(0 0,100% 0,96% 100%,4% 100%)}
+.cirkel .banden div:last-child{background:#3d3d3d;clip-path:polygon(4% 0,96% 0,89% 100%,11% 100%)}
+.resultaat .knoppen{justify-content:center}
+.footer{padding:24px 0 32px;text-align:center}
+.footer img{height:40px;width:auto}
+.tarief-stempel{font-size:.82rem;color:var(--inkt-zacht);text-align:center;margin:18px 0 0}
+
+/* ---------- Dialoog ---------- */
+dialog{border:0;border-radius:10px;padding:24px;max-width:420px;width:calc(100% - 32px);text-align:center}
+dialog::backdrop{background:rgba(0,0,0,.45)}
+
+/* ---------- Responsief ---------- */
+@media (max-width:900px){
+  .grid{grid-template-columns:1fr}
+  .overzicht{grid-template-columns:1fr}
+  .afm dl{grid-template-columns:1fr 1fr}
+  .afm dl div{border-left:0;border-top:1px solid var(--lijn)}
+  .afm dl div:nth-child(-n+2){border-top:0}
+  .afm dl div:nth-child(even){border-left:1px solid var(--lijn)}
+}
+@media (max-width:640px){
+  h1{font-size:1.3rem}
+  .kaarten{grid-template-columns:1fr 1fr;gap:16px}
+  .kaarten svg{width:88px;height:88px}
+  .stappen .txt{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap}
+  .stap-teller{display:block}
+  .voortgang .wrap{padding-top:10px;padding-bottom:10px}
+  .stappen li{padding-top:0;height:44px}
+  .stappen li::before{top:20px}
+  .stappen .stip{top:15px}
+  .stappen button{height:44px}
+  .knoppen{flex-direction:column-reverse}
+  .knoppen .btn{width:100%}
+  .paneel{padding:16px}
+  .seg .knop{font-size:.9rem}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important;scroll-behavior:auto!important}}
+@media print{.voortgang,.knoppen,.skip,.footer{display:none}}
+</style>
+</head>
+<body>
+<a class="skip" href="#inhoud">Direct naar de inhoud</a>
+
+<header class="voortgang" id="voortgangBalk" hidden>
+  <div class="wrap">
+    <button type="button" class="pijl" id="pijlTerug" aria-label="Vorige stap">
+      <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M10.5 2 4.5 8l6 6" fill="none" stroke="currentColor" stroke-width="2.4"/></svg>
+    </button>
+    <nav aria-label="Voortgang" style="flex:1">
+      <ol class="stappen" id="stappenLijst"></ol>
+    </nav>
+    <button type="button" class="pijl" id="pijlVerder" aria-label="Volgende stap">
+      <svg viewBox="0 0 16 16" aria-hidden="true"><path d="m5.5 2 6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.4"/></svg>
+    </button>
+  </div>
+</header>
+
+<main id="inhoud" tabindex="-1">
+<div class="wrap">
+
+<!-- ================= START ================= -->
+<section class="stap" data-stap="0" aria-labelledby="h0">
+  <h1 id="h0" tabindex="-1" style="text-align:center">Aanvraagstraat</h1>
+  <ul class="kaarten">
+    <li><svg viewBox="0 0 120 120" aria-hidden="true" focusable="false"><circle cx="60" cy="60" r="60" fill="#00d796"/><g fill="none" stroke="#fff" stroke-width="4" stroke-linejoin="round"><path d="M40 30h40v60H40z" fill="#00d796"/><path d="M36 34h40v60H36z" fill="#00d796"/><rect x="43" y="44" width="9" height="9"/><rect x="43" y="61" width="9" height="9"/><rect x="43" y="78" width="9" height="9"/><path d="M58 48h12M58 65h12M58 82h12"/><path d="M44 64l4 4 8-10" stroke-linecap="round"/></g></svg><strong>Start</strong><span>Start de voorbeeld aanvraag</span></li>
+    <li><svg viewBox="0 0 120 120" aria-hidden="true" focusable="false"><circle cx="60" cy="60" r="60" fill="#00d796"/><g fill="#fff"><path d="M34 36h20v6a5 5 0 1 0 10 0v-6h20v20h-6a5 5 0 1 0 0 10h6v20H64v-6a5 5 0 1 0-10 0v6H34V66h6a5 5 0 1 0 0-10h-6z" transform="rotate(-12 60 60)"/></g><g stroke="#00d796" stroke-width="3"><path d="M60 30v62M30 60h62" transform="rotate(-12 60 60)"/></g></svg><strong>Mijn totale kosten</strong><span>Bereken de kosten</span></li>
+    <li><svg viewBox="0 0 120 120" aria-hidden="true" focusable="false"><circle cx="60" cy="60" r="60" fill="#00d796"/><g fill="#fff"><rect x="38" y="28" width="44" height="64" rx="5"/></g><g fill="#00d796"><rect x="44" y="34" width="32" height="14" rx="2"/><circle cx="48" cy="58" r="3.5"/><circle cx="60" cy="58" r="3.5"/><circle cx="72" cy="58" r="3.5"/><circle cx="48" cy="69" r="3.5"/><circle cx="60" cy="69" r="3.5"/><circle cx="72" cy="69" r="3.5"/><circle cx="48" cy="80" r="3.5"/><circle cx="60" cy="80" r="3.5"/><circle cx="72" cy="80" r="3.5"/></g><text x="60" y="45" font-size="11" font-weight="700" text-anchor="middle" fill="#fff" font-family="Arial">€ ?</text></svg><strong>Kan ik dit bedrag lenen?</strong><span>Kunt u dit bedrag lenen?</span></li>
+    <li><svg viewBox="0 0 120 120" aria-hidden="true" focusable="false"><circle cx="60" cy="60" r="60" fill="#00d796"/><path d="M34 60 60 36l26 24M41 54v32h14V70h10v16h14V54M74 42v-6h6v12" fill="none" stroke="#fff" stroke-width="5" stroke-linejoin="round" stroke-linecap="round"/></svg><strong>Mijn overzicht</strong><span>Uw overzicht en voorbeeld renteaanbod</span></li>
+  </ul>
+  <div class="intro">
+    <button type="button" class="btn" data-ga="1">Start</button>
+    <p style="margin-top:24px">Wij proberen de zaken hiermee zo simpel mogelijk te maken. Maar hypotheken zijn natuurlijk toch een beetje ingewikkeld. Het gaat over veel geld en een langjarige verplichting. Daarom adviseren wij om u bij het afsluiten van een hypotheek te laten bijstaan door een onafhankelijke adviseur.</p>
+  </div>
+</section>
+
+<!-- ================= STAP 1 ================= -->
+<section class="stap" data-stap="1" aria-labelledby="h1" hidden>
+  <p class="stap-teller">Stap 1 van 4</p>
+  <h1 id="h1" tabindex="-1">Vul de vraagprijs in van de woning</h1>
+  <form class="paneel" style="max-width:560px" novalidate onsubmit="return false">
+    <div class="veld">
+      <label for="vraagprijs">Vraagprijs <span class="verplicht" aria-hidden="true">*</span></label>
+      <details class="info"><summary>Uitleg vraagprijs</summary>
+        <p>Hier tonen we de vraagprijs van de woning. Als de vraagprijs bekend is, wordt deze automatisch getoond en kunt u deze eventueel aanpassen (b.v. bij een lager of hoger bod).</p>
+        <p>Wilt u weten wat uw maandlasten worden bij een specifiek leenbedrag? Vul dan het gewenste bedrag in.</p>
+      </details>
+      <div class="euro" id="vraagprijsWrap"><span aria-hidden="true">€</span><input id="vraagprijs" class="bedrag" inputmode="numeric" autocomplete="off" required aria-required="true" aria-describedby="vraagprijsFout"></div>
+      <p class="veldfout" id="vraagprijsFout" hidden>Vul de vraagprijs van de woning in.</p>
+    </div>
+    <p class="verplicht-uitleg"><span class="verplicht" aria-hidden="true">*</span> verplicht veld</p>
+  </form>
+  <div class="knoppen">
+    <button type="button" class="btn sec" data-ga="0">Terug</button>
+    <button type="button" class="btn" data-ga="2">Verder</button>
+  </div>
+</section>
+
+<!-- ================= STAP 2 ================= -->
+<section class="stap" data-stap="2" aria-labelledby="h2s" hidden>
+  <p class="stap-teller">Stap 2 van 4</p>
+  <h1 id="h2s" tabindex="-1">Mijn totale kosten</h1>
+  <div class="grid">
+    <form class="paneel" novalidate onsubmit="return false">
+      <div class="veld">
+        <label for="hoofdsom">Wat is de gewenste hoofdsom? <span class="verplicht" aria-hidden="true">*</span></label>
+        <div class="euro" id="hoofdsomWrap"><span aria-hidden="true">€</span><input id="hoofdsom" class="bedrag" inputmode="numeric" autocomplete="off" required aria-required="true"></div>
+      </div>
+
+      <fieldset>
+        <legend class="vraag">Gaat u verbouwen?</legend>
+        <details class="info"><summary>Uitleg verbouwen</summary><p>Als u gaat verbouwen kunt u in sommige gevallen een deel van de verbouwingskosten mee laten financieren in de hypotheek.</p></details>
+        <div class="seg">
+          <label><input type="radio" name="verbouwen" value="ja"><span class="knop">Ja</span></label>
+          <label><input type="radio" name="verbouwen" value="nee" checked><span class="knop">Nee</span></label>
+        </div>
+      </fieldset>
+      <div class="uitklap" id="verbouwenUit" hidden>
+        <div class="veld">
+          <label for="verbouwKosten">Hoeveel denkt u dat het gaat kosten?</label>
+          <div class="euro"><span aria-hidden="true">€</span><input id="verbouwKosten" class="bedrag" inputmode="numeric" autocomplete="off"></div>
+        </div>
+        <div class="veld">
+          <label for="waardeNa">Wat is de waarde van de woning na het uitvoeren van de verbouwing?</label>
+          <p style="margin:0 0 6px;font-size:.88rem;color:var(--inkt-zacht)" id="waardeNaHint">Wij vullen voor: huidige waarde + 70% van de verbouwingskosten. U kunt dit aanpassen.</p>
+          <div class="euro"><span aria-hidden="true">€</span><input id="waardeNa" class="bedrag" inputmode="numeric" autocomplete="off" aria-describedby="waardeNaHint"></div>
+        </div>
+      </div>
+
+      <fieldset>
+        <legend class="vraag">Wilt u eigen geld gebruiken?</legend>
+        <details class="info"><summary>Uitleg eigen geld</summary>
+          <p>U kunt tot maximaal 100% van de waarde van de woning lenen. Dit betekent dat u bij een vraagprijs van € 100.000,- maximaal € 100.000,- mag lenen. Dit is inclusief de kosten die verbonden zijn aan de aankoop van de woning.</p>
+          <p>U kunt het tekort aanvullen met eigen geld. Ook kunt u een deel van de woning met eigen middelen betalen. Dit kan invloed op de hoogte van de rente die u moet betalen.</p>
+        </details>
+        <div class="seg">
+          <label><input type="radio" name="eigengeld" value="ja"><span class="knop">Ja</span></label>
+          <label><input type="radio" name="eigengeld" value="nee" checked><span class="knop">Nee</span></label>
+        </div>
+      </fieldset>
+      <div class="uitklap" id="eigengeldUit" hidden>
+        <div class="veld">
+          <label for="eigenGeld">Hoeveel eigen geld wilt u inleggen?</label>
+          <div class="euro"><span aria-hidden="true">€</span><input id="eigenGeld" class="bedrag" inputmode="numeric" autocomplete="off"></div>
+        </div>
+      </div>
+
+      <div id="meldingenStap2" aria-live="polite"></div>
+
+      <div class="veld">
+        <label for="energielabel">Wat is het energielabel van de woning?</label>
+        <select id="energielabel">
+          <option value="EPG">A++++ (met energieprestatiegarantie)</option>
+          <option value="A++++">A++++</option><option value="A+++">A+++</option><option value="A++">A++</option><option value="A+">A+</option>
+          <option value="A">A</option><option value="B">B</option><option value="C">C</option><option value="D">D</option>
+          <option value="E" selected>E</option><option value="F">F</option><option value="G">G</option>
+        </select>
+      </div>
+
+      <fieldset id="nhgVeld">
+        <legend class="vraag">Nationale Hypotheek Garantie?</legend>
+        <details class="info"><summary>Uitleg NHG</summary>
+          <p>Met de Nationale Hypotheek Garantie (NHG) bent u zeker van een verantwoorde en betaalbare hypotheek.</p>
+          <p>Veranderingen in uw persoonlijke omstandigheden kunnen van invloed zijn op uw financiële situatie. Zo kunt u, als u gaat scheiden, arbeidsongeschikt of werkloos raakt, misschien uw hypotheek niet meer betalen. Heeft u een hypotheek met NHG, dan heeft u in deze vervelende periode een vangnet waarop u kunt vertrouwen.</p>
+          <p>Voor een hypotheek met NHG gelden een aantal voorwaarden. De huidige kostengrens is <span class="nhgGrens"></span>. Dit is het maximale bedrag dat u met NHG kunt lenen om de woning te financieren. Dit bedrag is inclusief bijkomende kosten, zoals notariskosten, borgtochtprovisie en overdrachtsbelasting.</p>
+        </details>
+        <div class="seg">
+          <label><input type="radio" name="nhg" value="ja"><span class="knop">Ja</span></label>
+          <label><input type="radio" name="nhg" value="nee" checked><span class="knop">Nee</span></label>
+        </div>
+      </fieldset>
+      <p class="melding info" id="nhgNiet" hidden>NHG is niet mogelijk: de hoofdsom of de woningwaarde ligt boven de kostengrens van <span class="nhgGrens"></span>.</p>
+      <p class="verplicht-uitleg"><span class="verplicht" aria-hidden="true">*</span> verplicht veld</p>
+    </form>
+
+    <div class="kostenkolom" data-overzicht></div>
+  </div>
+  <div class="knoppen">
+    <button type="button" class="btn sec" data-ga="1">Terug</button>
+    <button type="button" class="btn" data-ga="3">Verder</button>
+  </div>
+</section>
+
+<!-- ================= STAP 3 ================= -->
+<section class="stap" data-stap="3" aria-labelledby="h3s" hidden>
+  <p class="stap-teller">Stap 3 van 4</p>
+  <h1 id="h3s" tabindex="-1">Kan ik dit bedrag lenen?</h1>
+  <div class="grid">
+    <form class="paneel" novalidate onsubmit="return false">
+      <fieldset>
+        <legend class="vraag">Wat is uw geboortedatum? <span class="verplicht" aria-hidden="true">*</span></legend>
+        <details class="info"><summary>Let op bij (bijna) pensioen</summary>
+          <p>Ontvangt u nu AOW/pensioen of gaat u binnen 10,5 jaar na de datum van het moment van aanvragen met pensioen? En wilt u verhuizen van de ene koopwoning naar de andere? Dan kunt u misschien meer lenen dan hier wordt getoond. Vraag uw adviseur naar de specifieke voorwaarden.</p>
+        </details>
+        <div class="datum" id="datumWrap">
+          <div><label for="gebDag">Dag</label><input id="gebDag" inputmode="numeric" maxlength="2" autocomplete="bday-day" placeholder="DD" aria-describedby="datumFout"></div>
+          <div><label for="gebMaand">Maand</label><input id="gebMaand" inputmode="numeric" maxlength="2" autocomplete="bday-month" placeholder="MM" aria-describedby="datumFout"></div>
+          <div><label for="gebJaar">Jaar</label><input id="gebJaar" class="jaar" inputmode="numeric" maxlength="4" autocomplete="bday-year" placeholder="JJJJ" aria-describedby="datumFout"></div>
+        </div>
+        <p class="veldfout" id="datumFout" hidden>Vul een geldige geboortedatum in (bijvoorbeeld 01 03 1990).</p>
+      </fieldset>
+
+      <div class="veld">
+        <label for="inkomen">Wat is uw bruto jaarinkomen? <span class="verplicht" aria-hidden="true">*</span></label>
+        <details class="info"><summary>Inkomen als ondernemer of DGA</summary>
+          <p>Als u IB-ondernemer of Directeur Groot Aandeelhouder bent, gelden er andere regels voor uw inkomen. Bereken uw bruto jaarinkomen met de volgende uitgangspunten:</p>
+          <p>Als u meer dan 3 jaar IB-ondernemer bent, neemt u de gemiddelde nettowinst over de afgelopen 3 jaar met als maximum uw winst van het laatste jaar.</p>
+          <p>Ondernemers voor de inkomstenbelasting en directeur-grootaandeelhouders hebben een Inkomensverklaring voor ondernemers (IKV) nodig. De IKV geeft een financieel overzicht van de onderneming en de toegepaste correcties met als uitkomst het ondernemersinkomen. Dit inkomen neemt MUNT volledig mee in het toetsinkomen.</p>
+          <p>De IKV moet opgemaakt zijn door een rekenexpert die door MUNT is geautoriseerd (zie <a href="https://www.munthypotheken.nl/inkomensverklaring" target="_blank" rel="noopener">munthypotheken.nl/inkomensverklaring<span class="sr-only"> (opent in nieuw venster)</span></a>) en mag op de datum van het hypotheekaanbod niet ouder zijn dan 6 maanden. De expert deelt u of uw klant mee welke documenten nodig zijn om het ondernemersinkomen te berekenen.</p>
+        </details>
+        <div class="euro" id="inkomenWrap"><span aria-hidden="true">€</span><input id="inkomen" class="bedrag" inputmode="numeric" autocomplete="off" required aria-required="true" aria-describedby="inkomenFout"></div>
+        <p class="veldfout" id="inkomenFout" hidden>Vul uw bruto jaarinkomen in.</p>
+      </div>
+
+      <fieldset>
+        <legend class="vraag">Heeft u een partner?</legend>
+        <div class="seg">
+          <label><input type="radio" name="partner" value="ja"><span class="knop">Ja</span></label>
+          <label><input type="radio" name="partner" value="nee" checked><span class="knop">Nee</span></label>
+        </div>
+      </fieldset>
+      <div class="uitklap" id="partnerUit" hidden>
+        <div class="veld">
+          <label for="partnerInkomen">Wat is het bruto jaarinkomen van uw partner?</label>
+          <div class="euro"><span aria-hidden="true">€</span><input id="partnerInkomen" class="bedrag" inputmode="numeric" autocomplete="off"></div>
+        </div>
+      </div>
+
+      <fieldset>
+        <legend class="vraag">Voor welke rentevastperiode wilt u een renteaanbod?</legend>
+        <details class="info"><summary>Uitleg rentevaste periode</summary>
+          <p>Wanneer u een hypotheek afsluit is de looptijd meestal 30 jaar. Binnen die 30 jaar maakt u een afspraak over de rente die u gaat betalen en voor welke periode. De looptijd van 30 jaar kan opgeknipt worden in meerdere “rentevaste periodes”.</p>
+          <p>De duur van de rentevaste periode heeft invloed op de hoogte van de rente. In het algemeen geldt: hoe langer die periode, hoe hoger de rente. MUNT hanteert rentevaste periodes van 5, 10, 20 en 30 jaar.</p>
+          <p>Als een rentevaste periode afloopt binnen de 30 jaar van de hypotheek, dan moet u een nieuwe “renteafspraak” maken met de dan geldende rentetarieven.</p>
+        </details>
+        <div class="seg rvp" id="rvpKeuze"></div>
+      </fieldset>
+
+      <fieldset>
+        <legend class="vraag">Heeft u schulden of leningen?</legend>
+        <div class="seg">
+          <label><input type="radio" name="schulden" value="ja"><span class="knop">Ja</span></label>
+          <label><input type="radio" name="schulden" value="nee" checked><span class="knop">Nee</span></label>
+        </div>
+      </fieldset>
+      <div class="uitklap" id="schuldenUit" hidden>
+        <div class="veld">
+          <label for="krediet">Totale som leningen (eventueel inclusief leningen partner)</label>
+          <div class="euro"><span aria-hidden="true">€</span><input id="krediet" class="bedrag" inputmode="numeric" autocomplete="off"></div>
+        </div>
+        <div class="veld">
+          <label for="studie">Totaal maandbedrag studieschuld (eventueel inclusief maandbedrag studieschuld partner)</label>
+          <div class="euro"><span aria-hidden="true">€</span><input id="studie" class="bedrag" inputmode="numeric" autocomplete="off"></div>
+        </div>
+        <div class="veld">
+          <label for="alimentatie">Hoeveel partneralimentatie betaalt u per maand?</label>
+          <div class="euro"><span aria-hidden="true">€</span><input id="alimentatie" class="bedrag" inputmode="numeric" autocomplete="off"></div>
+        </div>
+      </div>
+
+      <fieldset>
+        <legend class="vraag">Is er sprake van erfpacht?</legend>
+        <details class="info"><summary>Uitleg erfpacht</summary>
+          <p>Veel huizen in Nederland staan niet op eigen grond, maar op grond met een erfpacht. Bij aankoop van een woning bezit u de woning maar niet de grond waar de woning op staat. Er zijn in het algemeen drie vormen van erfpacht:</p>
+          <ul>
+            <li><strong>Erfpacht met een periodieke canon</strong> lijkt het meest op een huursituatie. Hierbij betaalt u periodiek (meestal maandelijks of jaarlijks) een bedrag aan de verpachter.</li>
+            <li><strong>Tijdelijke afkoop van de erfpacht:</strong> de erfpacht is voor een vooraf vastgestelde periode afgekocht. Dit gebeurt bijvoorbeeld vaak bij nieuwbouwprojecten.</li>
+            <li><strong>Eeuwigdurende afkoop van de erfpacht:</strong> bij de aankoop wordt eenmalig een bedrag betaald om de erfpacht af te kopen. Dan is er vrijwel geen verschil met een woning op eigen grond (ook niet in verkoopprijs).</li>
+          </ul>
+        </details>
+        <div class="seg">
+          <label><input type="radio" name="erfpacht" value="ja"><span class="knop">Ja</span></label>
+          <label><input type="radio" name="erfpacht" value="nee" checked><span class="knop">Nee</span></label>
+        </div>
+      </fieldset>
+      <div class="uitklap" id="erfpachtUit" hidden>
+        <div class="veld">
+          <label for="canon">Bedrag jaarlijkse canon</label>
+          <div class="euro"><span aria-hidden="true">€</span><input id="canon" class="bedrag" inputmode="numeric" autocomplete="off"></div>
+        </div>
+      </div>
+      <p class="verplicht-uitleg"><span class="verplicht" aria-hidden="true">*</span> verplicht veld</p>
+    </form>
+
+    <div>
+      <div data-overzicht></div>
+      <div class="blok haalbaar" id="haalbaarBlok" style="margin-top:12px" aria-live="polite">
+        <span class="l">Financieel haalbaar</span><span class="w" id="maxHyp">–</span>
+        <span class="status" id="haalbaarStatus"></span>
+        <span id="ebvRegel"><span class="l" style="margin-top:6px">Extra ruimte voor EBV</span><span class="w" id="ebv">–</span></span>
+      </div>
+    </div>
+  </div>
+
+  <div id="meldingenStap3" aria-live="polite" style="margin-top:18px"></div>
+
+  <section class="afm" aria-labelledby="afmKop">
+    <h2 id="afmKop" class="sr-only">Uw maandlast (indicatie)</h2>
+    <dl>
+      <div><dt>Totale lening</dt><dd id="afmLening">–</dd></div>
+      <div><dt>Vaste rente</dt><dd id="afmRente">–</dd></div>
+      <div><dt>Maandelijks bedrag</dt><dd id="afmMaand" aria-live="polite">–</dd></div>
+      <div><dt>Looptijd van de lening</dt><dd>360 maanden</dd></div>
+      <div><dt>Totaalbedrag</dt><dd id="afmTotaal">–</dd></div>
+      <div><dt>Jaarlijks kostenpercentage</dt><dd id="afmJkp">–</dd></div>
+    </dl>
+    <ul>
+      <li>Dit betreft een annuïteitenhypotheek met een rentevaste periode van <span class="rvpJaar">10</span> jaar waarbij de aanname is gedaan dat de rente gedurende de looptijd van 360 maanden vast staat. MUNT verlaagt de risico-opslag automatisch zodra de schuld door aflossing in een lagere risicoklasse valt; dat is in het totaalbedrag doorgerekend.</li>
+      <li>De getoonde maandlast is de bruto maandlast. Hoogstwaarschijnlijk heeft u recht op hypotheekrenteaftrek. Uw hypotheekadviseur kan voor u de netto maandlasten berekenen.</li>
+      <li>Naast de maandlasten dient u, vanaf 70-jarige leeftijd en als uw hypotheek hoger is dan 80% van de marktwaarde van de woning, een overlijdensrisicoverzekering af te sluiten voor het gedeelte van de hypotheek dat boven de 80% marktwaarde uitkomt. De te betalen premie is NIET in dit overzicht meegenomen. Uw adviseur kan u een passend premievoorstel doen.</li>
+      <li>Notariskosten, taxatiekosten en advieskosten die we gebruiken in deze voorbeeldberekening zijn gemiddelden. De daadwerkelijke kosten kunnen hiervan afwijken. Daarom zijn deze bij de bepaling van het jaarlijks kostenpercentage (JKP) niet meegenomen. Het JKP bestaat uitsluitend uit de effectieve rente die u aan MUNT Hypotheken zou betalen, als u een hypotheek bij ons zou krijgen.</li>
+      <li>De extra ruimte voor EBV is alleen te gebruiken voor één of meer van de goedgekeurde energiebesparende maatregelen. Welke dit zijn, vindt u op <a href="https://www.munthypotheken.nl/duurzaamheid/mijn-woning-verduurzamen/" target="_blank" rel="noopener">munthypotheken.nl/duurzaamheid<span class="sr-only"> (opent in nieuw venster)</span></a>. De maandelijkse lasten voor rente en terugbetaling EBV zijn in de maandlastenberekening niet meegenomen.</li>
+    </ul>
+  </section>
+  <p class="tarief-stempel">Rentetarieven en normen per <span class="tariefDatum"></span>. Aan deze berekening kunt u geen rechten ontlenen.</p>
+  <div class="knoppen">
+    <button type="button" class="btn sec" data-ga="2">Terug</button>
+    <button type="button" class="btn" data-ga="4">Verder</button>
+  </div>
+</section>
+
+<!-- ================= STAP 4 ================= -->
+<section class="stap" data-stap="4" aria-labelledby="h4s" hidden>
+  <p class="stap-teller">Stap 4 van 4</p>
+  <div class="resultaat">
+    <h1 id="h4s" tabindex="-1">Uw hypotheekberekening staat klaar</h1>
+    <div class="cirkel">
+      <svg class="logo" viewBox="0 0 260 230" role="img" aria-label="MUNT Hypotheken"><polygon points="98,10 172,48 172,118 98,82" fill="#00d796"/><polygon points="98,10 98,82 70,98 70,30" fill="#00d796"/><polygon points="70,98 98,82 172,118 140,128" fill="#00d796"/><path d="M98,10 98,82 172,118 M98,82 70,98" fill="none" stroke="#fff" stroke-width="4"/><text x="130" y="190" text-anchor="middle" font-family="Georgia,'Times New Roman',serif" font-weight="700" font-size="66" fill="#111">MUNT</text><text x="130" y="222" text-anchor="middle" font-family="Arial,sans-serif" font-weight="700" font-size="20" letter-spacing="9" fill="#111">HYPOTHEKEN</text></svg>
+      <div class="banden">
+        <div>Hypotheekbedrag: <span id="resBedrag"></span></div>
+        <div>Bruto maandlast: <span id="resMaand"></span></div>
+      </div>
+    </div>
+    <div class="knoppen">
+      <button type="button" class="btn sec" data-ga="3">Terug</button>
+      <button type="button" class="btn" id="downloadRapport">Download rapport</button>
+    </div>
+    <p class="tarief-stempel" id="popupMelding" role="status"></p>
+  </div>
+</section>
+
+<!-- ================= STAP 5 ================= -->
+<section class="stap" data-stap="5" aria-labelledby="h5s" hidden>
+  <h1 id="h5s" tabindex="-1">Hoe nu verder?</h1>
+  <div style="max-width:760px">
+    <p><strong>U heeft zojuist uw persoonlijke hypotheekberekening gedownload.</strong></p>
+    <p>Misschien heeft u vragen over de hypotheekberekening die u zojuist heeft gemaakt of wilt u meteen een hypotheek bij ons aanvragen. Bij MUNT Hypotheken geloven we in de toegevoegde waarde van goed hypotheekadvies. Wij werken daarom samen met veel verschillende, maar altijd onafhankelijke, hypotheekadviseurs in heel Nederland. Daardoor is er altijd wel een hypotheekadviseur die bij u past in de buurt.</p>
+    <p>De juiste adviseur uitkiezen is bij MUNT Hypotheken bijzonder gemakkelijk. U vult in de adviseurszoeker uw postcode in en wij laten u zien welke adviseurs in de buurt u zouden kunnen adviseren bij het afsluiten van een MUNT Hypotheek.</p>
+    <h2>Wilt u in contact komen met een onafhankelijke hypotheekadviseur?</h2>
+    <div class="knoppen" style="justify-content:flex-start">
+      <a class="btn" href="https://www.munthypotheken.nl/vind-een-adviseur/" target="_blank" rel="noopener">Vind een adviseur<span class="sr-only"> (opent in nieuw venster)</span></a>
+      <button type="button" class="btn sec" id="opnieuwRapport">Rapport opnieuw openen</button>
+      <button type="button" class="btn sec" data-ga="4">Terug naar overzicht</button>
+    </div>
+  </div>
+</section>
+
+</div>
+</main>
+
+<footer class="footer">
+  <img src="assets/rekentool-van-nhb.svg" alt="Een rekentool van de Nationale Hypotheekbond">
+</footer>
+
+<script>
+"use strict";
+/* =====================================================================
+   CONFIGURATIE — werk deze waarden bij wanneer tarieven/normen wijzigen
+   ===================================================================== */
+const CONFIG = {
+  tariefDatum: "23 november 2026",
+  // MUNT-rentesheet (snapshot munt.hypotheekbond.nl, 23-11-2026)
+  // rentevaste periode (jaar) -> risicoklasse -> rente %
+  // klassen: nhg = met NHG, l60 = t/m 60% LTV, l80 = t/m 80%, l90 = t/m 90%, g90 = boven 90%
+  rentes: {
+    5:  {nhg:4.31, l60:4.33, l80:4.37, l90:4.38, g90:4.40},
+    10: {nhg:4.36, l60:4.43, l80:4.49, l90:4.54, g90:4.56},
+    20: {nhg:4.56, l60:4.56, l80:4.59, l90:4.62, g90:4.68},
+    30: {nhg:4.58, l60:4.59, l80:4.63, l90:4.66, g90:4.75}
+  },
+  standaardRvp: 10,
+  looptijd: 360,
+  overdrachtsbelasting: 0.02,       // eigen woning
+  notarisLevering: 650,
+  notarisHypotheek: 650,
+  taxatie: 500,
+  advies: 2500,
+  nhgKostengrens: 470000,
+  nhgProvisie: 0.004,               // 0,4% van de hoofdsom
+  waardestijgingVerbouwing: 0.7,    // voorstel waarde na verbouwing
+  maxLtv: 1.00,
+  toetsrenteKort: 5.0,              // AFM-toetsrente bij rentevaste periode < 10 jaar
+  alleenstaandeBonus: 17000,        // extra leenruimte alleenstaande (vanaf eerste tabelrij)
+  kredietFactor: 0.02,              // 2% van de kredietsom per maand
+  // Studieschuld: factor per toetsrente-klasse (≤1,5% … >6,5%)
+  studieFactor: [1.05,1.05,1.10,1.15,1.20,1.20,1.25,1.30,1.30,1.35,1.40,1.40],
+  // Extra leenruimte energielabel (bovenop financieringslast)
+  labelBonus: {EPG:40000,"A++++":30000,"A+++":25000,"A++":20000,"A+":20000,A:10000,B:10000,C:5000,D:5000,E:0,F:0,G:0},
+  // Extra ruimte voor energiebesparende voorzieningen (EBV), getoond als indicatie
+  ebv: {EPG:0,"A++++":0,"A+++":0,"A++":10000,"A+":10000,A:10000,B:10000,C:15000,D:15000,E:20000,F:20000,G:20000},
+  // Financieringslastpercentages (Nibud 2026, zoals toegepast door de MUNT-rekentool).
+  // Per toetsrente-klasse: laag = % onder eerste tabelrij, start = eerste tabelrij (bruto toetsinkomen),
+  // flp = % per € 1.000 inkomen vanaf start. Boven de laatste rij geldt de laatste waarde.
+  flp: {"normaal":[{"laag":15.5,"start":31000,"flp":[16.2,16.7,17.1,17.3,17.4,17.4,17.4,17.4,17.4,17.4,17.4,17.4,17.4,17.4,17.4,17.4,17.4,17.4,17.4,17.4,17.4,17.4,17.4,17.4,17.4,17.4,17.5,17.6,17.6,17.7,17.7,17.8,17.8,17.9,18.0,18.1,18.2,18.3,18.5,18.6,18.8,19.0,19.1,19.3,19.4,19.5,19.6,19.7,19.8,19.9,20.0,20.1,20.1,20.2,20.2,20.2,20.3,20.4,20.5,20.5,20.5,20.6,20.7,20.8,20.8,20.9,21.0,21.0,21.1,21.1,21.2,21.2,21.3,21.3,21.3,21.4,21.4,21.5,21.5,21.6,21.6,21.7,21.7,21.8,21.8,21.8,21.9,21.9,22.0,22.0,22.0,22.1,22.1,22.2,22.2,22.2,22.2,22.2,22.2,22.2]},{"laag":16.5,"start":31000,"flp":[17.3,17.9,18.3,18.5,18.5,18.5,18.5,18.5,18.5,18.5,18.5,18.5,18.5,18.5,18.5,18.5,18.5,18.5,18.5,18.5,18.5,18.5,18.5,18.5,18.5,18.5,18.5,18.6,18.6,18.7,18.7,18.8,18.9,18.9,19.0,19.1,19.2,19.4,19.5,19.7,19.9,20.0,20.2,20.4,20.5,20.6,20.8,20.9,20.9,21.0,21.1,21.2,21.2,21.3,21.3,21.4,21.4,21.5,21.5,21.6,21.6,21.7,21.7,21.8,21.9,21.9,22.0,22.1,22.1,22.2,22.2,22.3,22.4,22.4,22.5,22.5,22.5,22.6,22.6,22.7,22.7,22.8,22.8,22.9,22.9,22.9,23.0,23.0,23.1,23.1,23.2,23.2,23.2,23.3,23.3,23.3,23.3,23.3,23.3,23.3]},{"laag":17.5,"start":31000,"flp":[18.3,19.0,19.5,19.6,19.6,19.6,19.6,19.6,19.6,19.6,19.6,19.6,19.6,19.6,19.6,19.6,19.6,19.6,19.6,19.6,19.6,19.6,19.6,19.6,19.6,19.6,19.6,19.6,19.6,19.7,19.7,19.8,19.9,19.9,20.0,20.1,20.2,20.4,20.5,20.7,20.9,21.1,21.3,21.5,21.6,21.7,21.9,22.0,22.1,22.2,22.2,22.3,22.3,22.4,22.4,22.5,22.5,22.5,22.6,22.6,22.7,22.7,22.8,22.8,22.9,23.0,23.0,23.1,23.2,23.2,23.3,23.4,23.4,23.5,23.5,23.6,23.7,23.7,23.7,23.7,23.8,23.8,23.9,23.9,24.0,24.0,24.1,24.1,24.1,24.2,24.2,24.3,24.3,24.4,24.4,24.4,24.4,24.4,24.4,24.4]},{"laag":18.4,"start":31000,"flp":[19.3,20.1,20.6,20.6,20.6,20.6,20.6,20.6,20.6,20.6,20.6,20.6,20.6,20.6,20.6,20.6,20.6,20.6,20.6,20.6,20.6,20.6,20.6,20.6,20.6,20.6,20.6,20.6,20.6,20.7,20.7,20.7,20.9,21.0,21.0,21.1,21.2,21.4,21.5,21.7,21.9,22.1,22.3,22.5,22.6,22.8,22.9,23.1,23.2,23.2,23.3,23.4,23.4,23.4,23.5,23.5,23.6,23.6,23.7,23.7,23.7,23.8,23.8,23.9,23.9,24.0,24.0,24.1,24.2,24.2,24.3,24.4,24.4,24.5,24.5,24.6,24.7,24.7,24.8,24.8,24.8,24.9,24.9,25.0,25.0,25.0,25.1,25.1,25.2,25.2,25.3,25.3,25.4,25.4,25.5,25.5,25.5,25.5,25.5,25.5]},{"laag":19.3,"start":31000,"flp":[20.2,21.1,21.6,21.6,21.6,21.6,21.6,21.6,21.6,21.6,21.6,21.6,21.6,21.6,21.6,21.6,21.6,21.6,21.6,21.6,21.6,21.6,21.6,21.6,21.6,21.6,21.6,21.6,21.6,21.6,21.7,21.7,21.8,21.9,22.0,22.1,22.2,22.3,22.5,22.7,22.9,23.1,23.3,23.5,23.7,23.8,24.0,24.1,24.2,24.3,24.3,24.4,24.4,24.5,24.5,24.6,24.6,24.6,24.7,24.7,24.8,24.8,24.8,24.9,25.0,25.0,25.0,25.1,25.1,25.2,25.3,25.3,25.4,25.5,25.5,25.6,25.6,25.7,25.8,25.8,25.9,25.9,25.9,25.9,26.0,26.0,26.1,26.1,26.2,26.2,26.3,26.3,26.4,26.4,26.5,26.5,26.5,26.5,26.5,26.5]},{"laag":20.1,"start":31000,"flp":[21.2,22.1,22.6,22.6,22.6,22.6,22.6,22.6,22.6,22.6,22.6,22.6,22.6,22.6,22.6,22.6,22.6,22.6,22.6,22.6,22.6,22.6,22.6,22.6,22.6,22.6,22.6,22.6,22.6,22.6,22.6,22.7,22.7,22.8,22.9,23.0,23.1,23.2,23.4,23.6,23.8,24.1,24.3,24.5,24.6,24.8,24.9,25.1,25.2,25.3,25.4,25.4,25.4,25.5,25.5,25.6,25.6,25.6,25.7,25.7,25.8,25.8,25.8,25.9,25.9,26.0,26.0,26.1,26.1,26.1,26.2,26.3,26.3,26.4,26.5,26.5,26.6,26.7,26.7,26.7,26.8,26.8,26.9,26.9,26.9,27.0,27.0,27.1,27.1,27.2,27.2,27.3,27.3,27.4,27.4,27.4,27.4,27.4,27.4,27.4]},{"laag":20.9,"start":31000,"flp":[22.0,23.0,23.6,23.6,23.6,23.6,23.6,23.6,23.6,23.6,23.6,23.6,23.6,23.6,23.6,23.6,23.6,23.6,23.6,23.6,23.6,23.6,23.6,23.6,23.6,23.6,23.6,23.6,23.6,23.6,23.6,23.6,23.7,23.7,23.8,23.9,24.0,24.1,24.3,24.5,24.7,25.0,25.2,25.4,25.6,25.7,25.9,26.1,26.2,26.3,26.4,26.4,26.4,26.5,26.5,26.5,26.6,26.6,26.6,26.7,26.7,26.8,26.8,26.9,26.9,26.9,27.0,27.0,27.1,27.1,27.1,27.1,27.2,27.3,27.3,27.4,27.5,27.5,27.6,27.7,27.7,27.7,27.8,27.8,27.9,27.9,28.0,28.0,28.0,28.1,28.1,28.2,28.2,28.3,28.3,28.3,28.3,28.3,28.3,28.3]},{"laag":21.6,"start":31000,"flp":[22.7,23.8,24.6,24.6,24.6,24.6,24.6,24.6,24.6,24.6,24.6,24.6,24.6,24.6,24.6,24.6,24.6,24.6,24.6,24.6,24.6,24.6,24.6,24.6,24.6,24.6,24.6,24.6,24.6,24.6,24.6,24.6,24.6,24.6,24.7,24.7,24.8,25.0,25.1,25.3,25.6,25.8,26.0,26.3,26.4,26.6,26.8,27.0,27.1,27.2,27.3,27.3,27.4,27.4,27.4,27.4,27.5,27.5,27.6,27.6,27.6,27.7,27.7,27.8,27.8,27.9,27.9,27.9,28.0,28.0,28.0,28.1,28.1,28.1,28.2,28.2,28.3,28.4,28.4,28.5,28.5,28.6,28.7,28.7,28.7,28.8,28.8,28.9,28.9,28.9,29.0,29.0,29.1,29.1,29.2,29.2,29.2,29.2,29.2,29.2]},{"laag":22.2,"start":31000,"flp":[23.4,24.6,25.4,25.5,25.5,25.5,25.5,25.5,25.5,25.5,25.5,25.5,25.5,25.5,25.5,25.5,25.5,25.5,25.5,25.5,25.5,25.5,25.5,25.5,25.5,25.5,25.5,25.5,25.5,25.5,25.5,25.5,25.5,25.5,25.5,25.6,25.7,25.8,26.0,26.2,26.4,26.6,26.9,27.1,27.3,27.5,27.6,27.8,27.9,28.1,28.1,28.2,28.2,28.3,28.3,28.4,28.4,28.4,28.4,28.5,28.5,28.6,28.6,28.6,28.7,28.7,28.8,28.8,28.8,28.9,28.9,28.9,29.0,29.0,29.1,29.1,29.1,29.2,29.2,29.3,29.3,29.4,29.4,29.5,29.5,29.6,29.6,29.7,29.7,29.8,29.8,29.9,29.9,29.9,30.0,30.0,30.0,30.0,30.0,30.0]},{"laag":22.7,"start":31000,"flp":[24.1,25.3,26.1,26.4,26.4,26.4,26.4,26.4,26.4,26.4,26.4,26.4,26.4,26.4,26.4,26.4,26.4,26.4,26.4,26.4,26.4,26.4,26.4,26.4,26.4,26.4,26.4,26.4,26.4,26.4,26.4,26.4,26.4,26.4,26.4,26.4,26.5,26.7,26.8,27.0,27.2,27.4,27.6,27.9,28.1,28.2,28.4,28.6,28.7,28.9,29.0,29.0,29.1,29.1,29.2,29.2,29.2,29.3,29.3,29.3,29.3,29.4,29.4,29.5,29.5,29.5,29.6,29.6,29.6,29.7,29.7,29.8,29.8,29.8,29.9,29.9,30.0,30.0,30.0,30.0,30.1,30.1,30.2,30.2,30.3,30.3,30.4,30.4,30.5,30.5,30.6,30.6,30.7,30.8,30.8,30.8,30.8,30.8,30.8,30.8]},{"laag":23.2,"start":31000,"flp":[24.6,25.9,26.8,27.3,27.3,27.3,27.3,27.3,27.3,27.3,27.3,27.3,27.3,27.3,27.3,27.3,27.3,27.3,27.3,27.3,27.3,27.3,27.3,27.3,27.3,27.3,27.3,27.3,27.3,27.3,27.3,27.3,27.3,27.3,27.3,27.3,27.3,27.4,27.6,27.8,28.0,28.2,28.4,28.6,28.8,29.0,29.2,29.4,29.5,29.6,29.7,29.8,29.9,29.9,29.9,30.0,30.0,30.1,30.1,30.1,30.2,30.2,30.2,30.2,30.3,30.3,30.4,30.4,30.4,30.5,30.5,30.5,30.6,30.6,30.6,30.7,30.7,30.8,30.8,30.8,30.8,30.9,30.9,30.9,31.0,31.0,31.1,31.1,31.2,31.3,31.3,31.4,31.4,31.5,31.5,31.5,31.5,31.5,31.5,31.5]},{"laag":23.7,"start":31000,"flp":[25.1,26.4,27.4,28.1,28.1,28.1,28.1,28.1,28.1,28.1,28.1,28.1,28.1,28.1,28.1,28.1,28.1,28.1,28.1,28.1,28.1,28.1,28.1,28.1,28.1,28.1,28.1,28.1,28.1,28.1,28.1,28.1,28.1,28.1,28.1,28.1,28.1,28.2,28.3,28.5,28.7,28.9,29.2,29.3,29.5,29.7,29.9,30.1,30.2,30.3,30.4,30.5,30.6,30.6,30.7,30.7,30.8,30.8,30.8,30.9,30.9,31.0,31.0,31.0,31.0,31.0,31.1,31.1,31.2,31.2,31.2,31.3,31.3,31.3,31.4,31.4,31.5,31.5,31.5,31.5,31.6,31.6,31.7,31.7,31.7,31.7,31.8,31.8,31.9,31.9,32.0,32.0,32.1,32.1,32.2,32.2,32.2,32.2,32.2,32.2]}],"aow":[{"laag":18.5,"start":30000,"flp":[19.2,19.9,20.5,20.9,21.2,21.6,21.8,21.9,22.0,22.1,22.2,22.3,22.4,22.5,22.7,22.8,22.9,23.1,23.1,23.3,23.4,23.6,23.9,24.2,24.5,24.8,25.0,25.2,25.3,25.4,25.5,25.6,25.7,25.8,25.8,25.9,25.9,26.0,26.0,26.1,26.2,26.2,26.3,26.4,26.5,26.5,26.6,26.7,26.8,26.9,27.1,27.2,27.2,27.3,27.4,27.5,27.6,27.7,27.7,27.7,27.7,27.8,27.8,27.8,27.8,27.9,27.9,27.9,28.0,28.0,28.0,28.1,28.1,28.1,28.2,28.2,28.2,28.3,28.3,28.3,28.4,28.4,28.4,28.4,28.4,28.4,28.4,28.4,28.4,28.4,28.4,28.4,28.4,28.4,28.4,28.4,28.4,28.4,28.4,28.4,28.4]},{"laag":18.9,"start":30000,"flp":[19.8,20.6,21.2,21.7,22.0,22.4,22.7,22.9,23.1,23.2,23.3,23.4,23.5,23.6,23.7,23.9,24.0,24.1,24.3,24.4,24.6,24.8,25.0,25.4,25.7,26.0,26.4,26.6,26.8,27.0,27.1,27.2,27.3,27.4,27.6,27.6,27.6,27.7,27.7,27.8,27.9,27.9,28.0,28.0,28.1,28.2,28.3,28.3,28.4,28.5,28.5,28.6,28.8,28.8,28.9,29.0,29.1,29.1,29.2,29.2,29.2,29.2,29.3,29.3,29.3,29.3,29.4,29.4,29.4,29.4,29.5,29.5,29.5,29.6,29.6,29.6,29.6,29.7,29.7,29.7,29.8,29.8,29.8,29.8,29.8,29.8,29.8,29.8,29.8,29.8,29.8,29.8,29.8,29.8,29.8,29.8,29.8,29.8,29.8,29.8,29.8]},{"laag":19.4,"start":30000,"flp":[20.3,21.2,21.8,22.3,22.8,23.1,23.5,23.8,24.0,24.2,24.3,24.4,24.5,24.6,24.8,24.9,25.0,25.2,25.3,25.5,25.6,25.8,26.2,26.5,26.8,27.2,27.6,27.9,28.1,28.4,28.6,28.7,28.9,29.0,29.1,29.2,29.4,29.4,29.5,29.5,29.6,29.6,29.7,29.7,29.7,29.8,29.9,30.0,30.0,30.1,30.1,30.2,30.2,30.3,30.4,30.4,30.5,30.6,30.6,30.6,30.6,30.7,30.7,30.7,30.7,30.8,30.8,30.8,30.8,30.9,30.9,30.9,30.9,30.9,31.0,31.0,31.0,31.1,31.1,31.1,31.2,31.2,31.2,31.2,31.2,31.2,31.2,31.2,31.2,31.2,31.2,31.2,31.2,31.2,31.2,31.2,31.2,31.2,31.2,31.2,31.2]},{"laag":19.7,"start":30000,"flp":[20.8,21.7,22.4,22.9,23.4,23.9,24.3,24.6,24.9,25.1,25.2,25.3,25.5,25.6,25.8,25.9,26.0,26.1,26.3,26.5,26.7,26.8,27.2,27.5,27.9,28.3,28.6,29.0,29.4,29.6,29.9,30.1,30.4,30.5,30.7,30.8,30.9,31.0,31.1,31.2,31.3,31.3,31.4,31.4,31.4,31.4,31.5,31.6,31.6,31.7,31.7,31.8,31.9,31.9,31.9,31.9,31.9,32.0,32.0,32.0,32.1,32.1,32.1,32.1,32.1,32.1,32.2,32.2,32.2,32.2,32.3,32.3,32.3,32.3,32.3,32.4,32.4,32.4,32.5,32.5,32.5,32.5,32.5,32.5,32.5,32.5,32.5,32.5,32.5,32.5,32.5,32.5,32.5,32.5,32.5,32.5,32.5,32.5,32.5,32.5,32.5]},{"laag":20.1,"start":30000,"flp":[21.1,22.1,23.0,23.5,24.0,24.5,24.9,25.3,25.7,25.9,26.1,26.3,26.4,26.6,26.7,26.8,26.9,27.1,27.3,27.5,27.6,27.9,28.1,28.5,28.9,29.3,29.7,30.0,30.4,30.8,31.1,31.4,31.6,31.9,32.1,32.3,32.4,32.5,32.6,32.7,32.8,32.9,33.0,33.1,33.1,33.1,33.2,33.2,33.3,33.3,33.3,33.4,33.4,33.4,33.4,33.4,33.4,33.4,33.4,33.4,33.4,33.4,33.4,33.5,33.5,33.5,33.5,33.5,33.6,33.6,33.6,33.6,33.6,33.7,33.7,33.7,33.7,33.7,33.8,33.8,33.8,33.8,33.8,33.8,33.8,33.8,33.8,33.8,33.8,33.8,33.8,33.8,33.8,33.8,33.8,33.8,33.8,33.8,33.8,33.8,33.8]},{"laag":20.4,"start":30000,"flp":[21.5,22.5,23.4,24.0,24.5,25.1,25.6,26.0,26.3,26.6,26.9,27.1,27.3,27.4,27.6,27.7,27.9,28.0,28.2,28.3,28.6,28.8,29.1,29.4,29.8,30.3,30.7,31.1,31.4,31.8,32.1,32.5,32.8,33.0,33.3,33.6,33.8,34.0,34.1,34.2,34.3,34.4,34.5,34.6,34.7,34.8,34.8,34.8,34.8,34.8,34.8,34.8,34.8,34.8,34.8,34.8,34.8,34.8,34.8,34.8,34.8,34.8,34.8,34.8,34.8,34.8,34.8,34.8,34.8,34.9,34.9,34.9,34.9,34.9,35.0,35.0,35.0,35.0,35.1,35.1,35.1,35.1,35.1,35.1,35.1,35.1,35.1,35.1,35.1,35.1,35.1,35.1,35.1,35.1,35.1,35.1,35.1,35.1,35.1,35.1,35.1]},{"laag":20.7,"start":30000,"flp":[21.8,22.8,23.8,24.5,25.1,25.6,26.1,26.6,27.0,27.3,27.6,27.9,28.1,28.3,28.4,28.6,28.7,28.9,29.0,29.2,29.4,29.7,30.0,30.4,30.7,31.1,31.6,32.0,32.4,32.8,33.1,33.5,33.8,34.1,34.4,34.6,34.9,35.2,35.4,35.6,35.7,35.8,35.9,36.0,36.1,36.1,36.1,36.1,36.1,36.1,36.1,36.1,36.1,36.1,36.1,36.1,36.1,36.1,36.1,36.1,36.1,36.1,36.1,36.1,36.1,36.1,36.1,36.1,36.1,36.1,36.1,36.1,36.1,36.2,36.2,36.2,36.2,36.3,36.3,36.3,36.3,36.3,36.3,36.3,36.3,36.3,36.3,36.3,36.3,36.3,36.3,36.3,36.3,36.3,36.3,36.3,36.3,36.3,36.3,36.3,36.3]},{"laag":20.9,"start":30000,"flp":[22.1,23.1,24.1,24.8,25.5,26.1,26.6,27.1,27.5,27.9,28.2,28.5,28.8,29.0,29.2,29.4,29.5,29.7,29.9,30.0,30.2,30.5,30.8,31.2,31.6,32.0,32.4,32.8,33.3,33.7,34.1,34.4,34.8,35.1,35.4,35.6,36.0,36.2,36.4,36.7,36.9,37.1,37.3,37.3,37.3,37.3,37.3,37.3,37.3,37.3,37.3,37.3,37.3,37.3,37.3,37.3,37.3,37.3,37.3,37.3,37.3,37.3,37.3,37.3,37.3,37.3,37.3,37.3,37.3,37.3,37.3,37.3,37.3,37.3,37.4,37.4,37.4,37.4,37.4,37.5,37.5,37.5,37.5,37.5,37.5,37.5,37.5,37.5,37.5,37.5,37.5,37.5,37.5,37.5,37.5,37.5,37.5,37.5,37.5,37.5,37.5]},{"laag":21.1,"start":30000,"flp":[22.3,23.4,24.4,25.2,25.9,26.5,27.1,27.5,28.0,28.4,28.8,29.1,29.4,29.7,29.9,30.1,30.3,30.4,30.6,30.8,31.0,31.3,31.6,32.0,32.4,32.9,33.2,33.7,34.1,34.5,34.9,35.3,35.7,36.0,36.3,36.6,36.8,37.1,37.5,37.7,37.9,38.2,38.4,38.4,38.4,38.4,38.4,38.4,38.4,38.4,38.4,38.4,38.4,38.4,38.4,38.4,38.4,38.4,38.4,38.4,38.4,38.4,38.4,38.4,38.4,38.4,38.4,38.4,38.4,38.4,38.4,38.4,38.4,38.4,38.5,38.5,38.5,38.5,38.5,38.5,38.6,38.6,38.6,38.6,38.6,38.6,38.6,38.6,38.6,38.6,38.6,38.6,38.6,38.6,38.6,38.6,38.6,38.6,38.6,38.6,38.6]},{"laag":21.3,"start":30000,"flp":[22.5,23.7,24.7,25.5,26.2,26.9,27.5,28.0,28.4,28.9,29.3,29.6,30.0,30.3,30.6,30.8,30.9,31.1,31.3,31.5,31.7,32.0,32.3,32.7,33.2,33.6,34.0,34.4,34.8,35.3,35.7,36.1,36.5,36.8,37.2,37.5,37.8,38.0,38.3,38.6,38.9,39.1,39.4,39.5,39.5,39.5,39.5,39.5,39.5,39.5,39.5,39.5,39.5,39.5,39.5,39.5,39.5,39.5,39.5,39.5,39.5,39.5,39.5,39.5,39.5,39.5,39.5,39.5,39.5,39.5,39.5,39.5,39.5,39.5,39.5,39.5,39.5,39.6,39.6,39.6,39.6,39.6,39.6,39.6,39.6,39.6,39.6,39.6,39.6,39.6,39.6,39.6,39.6,39.6,39.6,39.6,39.6,39.6,39.6,39.6,39.6]},{"laag":21.5,"start":30000,"flp":[22.7,23.9,24.9,25.7,26.5,27.2,27.9,28.4,28.9,29.3,29.7,30.1,30.5,30.8,31.1,31.4,31.6,31.8,32.0,32.2,32.4,32.7,33.0,33.5,33.9,34.3,34.7,35.2,35.5,36.0,36.4,36.8,37.2,37.6,37.9,38.3,38.6,38.9,39.2,39.4,39.7,39.9,40.3,40.5,40.6,40.6,40.6,40.6,40.6,40.6,40.6,40.6,40.6,40.6,40.6,40.6,40.6,40.6,40.6,40.6,40.6,40.6,40.6,40.6,40.6,40.6,40.6,40.6,40.6,40.6,40.6,40.6,40.6,40.6,40.6,40.6,40.6,40.6,40.6,40.6,40.6,40.6,40.6,40.6,40.6,40.6,40.6,40.6,40.6,40.6,40.6,40.6,40.6,40.6,40.6,40.6,40.6,40.6,40.6,40.6,40.6]},{"laag":21.7,"start":30000,"flp":[22.9,24.1,25.2,26.0,26.7,27.5,28.2,28.8,29.2,29.7,30.1,30.5,30.9,31.3,31.6,31.9,32.2,32.4,32.6,32.8,33.0,33.3,33.7,34.1,34.5,35.0,35.5,35.9,36.3,36.6,37.1,37.5,37.9,38.3,38.6,39.0,39.3,39.7,40.0,40.3,40.5,40.7,41.0,41.3,41.6,41.7,41.7,41.7,41.7,41.7,41.7,41.7,41.7,41.7,41.7,41.7,41.7,41.7,41.7,41.7,41.7,41.7,41.7,41.7,41.7,41.7,41.7,41.7,41.7,41.7,41.7,41.7,41.7,41.7,41.7,41.7,41.7,41.7,41.7,41.7,41.7,41.7,41.7,41.7,41.7,41.7,41.7,41.7,41.7,41.7,41.7,41.7,41.7,41.7,41.7,41.7,41.7,41.7,41.7,41.7,41.7]}]}
+};
+
+/* ============================ Hulpfuncties ============================ */
+const $ = s => document.querySelector(s);
+const $$ = s => Array.from(document.querySelectorAll(s));
+const nf0 = new Intl.NumberFormat("nl-NL",{maximumFractionDigits:0});
+const nf2 = new Intl.NumberFormat("nl-NL",{minimumFractionDigits:2,maximumFractionDigits:2});
+const eur = (n,d=0) => "€ " + (d ? nf2.format(n) : nf0.format(Math.round(n)));
+const pct = n => nf2.format(n) + "%";
+const getal = el => { const v = (el.value||"").replace(/\D/g,""); return v ? parseInt(v,10) : 0; };
+const zet = (el,n) => { el.value = n ? nf0.format(Math.round(n)) : (n===0 ? "0" : ""); };
+const radio = name => (document.querySelector(`input[name="${name}"]:checked`)||{}).value;
+const annuiteit = (P,r,n) => { const i=r/1200; return i===0 ? P/n : P*i/(1-Math.pow(1+i,-n)); };
+const effectief = r => (Math.pow(1+r/1200,12)-1)*100;
+const r2 = n => Math.round(n*100)/100;
+
+/* Bedragvelden: duizendtallen live opmaken, cursor behouden */
+function formatteerVeld(el){
+  const pos = el.selectionStart ?? el.value.length;
+  const cijfersVoor = el.value.slice(0,pos).replace(/\D/g,"").length;
+  const cijfers = el.value.replace(/\D/g,"").replace(/^0+(?=\d)/,"").slice(0,9);
+  el.value = cijfers ? nf0.format(parseInt(cijfers,10)) : "";
+  let n=0, p=0;
+  while(p<el.value.length && n<cijfersVoor){ if(/\d/.test(el.value[p])) n++; p++; }
+  if(document.activeElement===el) el.setSelectionRange(p,p);
+}
+
+/* ============================ Toestand ============================ */
+const S = { stap:0, verst:0, waardeNaHandmatig:false, eigenGeldVoorgesteld:false };
+
+/* ============================ Rekenkern ============================ */
+function risicoKlasse(ltv, nhg){
+  if(nhg) return "nhg";
+  if(ltv<=60) return "l60";
+  if(ltv<=80) return "l80";
+  if(ltv<=90) return "l90";
+  return "g90";
+}
+
+function kosten(){
+  const prijs = getal($("#vraagprijs"));
+  const H = getal($("#hoofdsom"));
+  const verbouwen = radio("verbouwen")==="ja";
+  const R = verbouwen ? getal($("#verbouwKosten")) : 0;
+  const waardeNa = getal($("#waardeNa"));
+  const W = (verbouwen && waardeNa>0) ? waardeNa : prijs;              // woningwaarde (marktwaarde)
+  const ovb = Math.round(prijs*CONFIG.overdrachtsbelasting);
+  const nhgMogelijk = H<=CONFIG.nhgKostengrens && prijs<=CONFIG.nhgKostengrens && W<=CONFIG.nhgKostengrens;
+  const nhg = nhgMogelijk && radio("nhg")==="ja";
+  const nhgKosten = nhg ? Math.floor(H*CONFIG.nhgProvisie) : 0;
+  const gefinVerbouwing = verbouwen ? Math.max(0, Math.min(R, Math.min(W,H)-prijs)) : 0;
+  const eigenInbrengVerbouwing = R - gefinVerbouwing;
+  const aankoop = R + ovb + CONFIG.notarisLevering;
+  const hypKosten = CONFIG.notarisHypotheek + CONFIG.taxatie + CONFIG.advies + nhgKosten;
+  const totaal = prijs + aankoop + hypKosten;
+  const benodigd = Math.max(H,prijs) + hypKosten + (aankoop - gefinVerbouwing); // te financieren vóór eigen geld
+  const eigen = radio("eigengeld")==="ja" ? getal($("#eigenGeld")) : 0;
+  const teFinancieren = Math.max(0, benodigd - eigen);
+  const overschot = Math.max(0, H - W*CONFIG.maxLtv);                 // boven 100% van de woningwaarde
+  const tekort = (benodigd - H - eigen) > 0 ? benodigd - H : 0;        // eigen geld nodig
+  return {prijs,H,verbouwen,R,W,ovb,nhgMogelijk,nhg,nhgKosten,gefinVerbouwing,eigenInbrengVerbouwing,
+          aankoop,hypKosten,totaal,benodigd,eigen,teFinancieren,overschot,tekort};
+}
+
+function rvpTarieven(k){
+  const ltv = k.W>0 ? k.teFinancieren/k.W*100 : 100;
+  const klasse = risicoKlasse(ltv,k.nhg);
+  const out = {};
+  for(const j of Object.keys(CONFIG.rentes)){ out[j] = {rente:CONFIG.rentes[j][klasse], klasse, ltv}; }
+  return out;
+}
+
+/* Maandlast met automatische verlaging van de risico-opslag bij dalende LTV (MUNT-systematiek) */
+function aflosschema(P, W, rvp, nhg){
+  const tab = CONFIG.rentes[rvp], n = CONFIG.looptijd;
+  const rente0 = nhg ? tab.nhg : tab[risicoKlasse(W>0?P/W*100:100,false)];
+  const renteBij = ltv => nhg ? tab.nhg : (ltv>90 ? rente0 : ltv>80 ? tab.l90 : ltv>60 ? tab.l80 : tab.l60);
+  let saldo=P, rente=rente0, termijn=annuiteit(P,rente,n), totaal=0, totRente=0;
+  const maanden=[];
+  for(let m=0;m<n;m++){
+    const r = renteBij(W>0 ? saldo/W*100 : 100);
+    if(r!==rente){ rente=r; termijn=annuiteit(saldo,rente,n-m); }
+    const rd = saldo*rente/1200, afl = termijn-rd;
+    saldo -= afl; totaal += termijn; totRente += rd;
+    maanden.push({m,saldo:Math.max(0,saldo),rente,rd,afl,termijn});
+  }
+  return {eerste:maanden[0].termijn, rente0, totaal, totRente, maanden};
+}
+
+function leeftijdOp(geb, d){ let a=d.getFullYear()-geb.getFullYear(); const mm=d.getMonth()-geb.getMonth(); if(mm<0||(mm===0&&d.getDate()<geb.getDate())) a--; return a; }
+function aowBereikt(geb){
+  const vandaag = new Date();
+  const aow = new Date(geb); aow.setFullYear(aow.getFullYear()+67);
+  if(geb >= new Date(1961,0,1)) aow.setMonth(aow.getMonth()+3);   // AOW-leeftijd 67 jaar en 3 maanden vanaf 2028
+  return vandaag >= aow;
+}
+function geboortedatum(){
+  const d=+$("#gebDag").value, m=+$("#gebMaand").value, j=+$("#gebJaar").value;
+  if(!d||!m||String($("#gebJaar").value).length!==4) return null;
+  const dt = new Date(j,m-1,d);
+  if(dt.getFullYear()!==j||dt.getMonth()!==m-1||dt.getDate()!==d) return null;
+  const lft = leeftijdOp(dt,new Date());
+  if(lft<18||lft>110) return null;
+  return dt;
+}
+
+function maxHypotheek(k, rvp){
+  const geb = geboortedatum();
+  const inkomen = getal($("#inkomen"));
+  if(!geb || !inkomen) return null;
+  const partner = radio("partner")==="ja";
+  const partnerInk = partner ? getal($("#partnerInkomen")) : 0;
+  const schulden = radio("schulden")==="ja";
+  const alimentatieJaar = schulden ? getal($("#alimentatie"))*12 : 0;
+  const toetsinkomen = Math.max(0, inkomen + partnerInk - alimentatieJaar);
+  const rente = rvpTarieven(k)[rvp].rente;
+  const toetsrente = rvp<10 ? Math.max(rente, CONFIG.toetsrenteKort) : rente;
+  const idx = Math.min(11, Math.max(0, Math.ceil((toetsrente-1.5)/0.5 - 1e-9)));
+  const t = CONFIG.flp[aowBereikt(geb) ? "aow" : "normaal"][idx];
+  let flp, bonus=0;
+  if(toetsinkomen < t.start){ flp = t.laag; }
+  else { flp = t.flp[Math.min(t.flp.length-1, Math.floor((toetsinkomen-t.start)/1000))]; if(!partner) bonus = CONFIG.alleenstaandeBonus; }
+  const lastMaand = (schulden ? getal($("#krediet"))*CONFIG.kredietFactor + getal($("#studie"))*CONFIG.studieFactor[idx] : 0)
+                  + (radio("erfpacht")==="ja" ? getal($("#canon"))/12 : 0);
+  const a = annuiteit(1,toetsrente,CONFIG.looptijd);
+  let max = (toetsinkomen*flp/100/12 - lastMaand)/a + bonus;
+  max = Math.max(0,max);
+  if(max>0) max += CONFIG.labelBonus[$("#energielabel").value]||0;
+  return {max: r2(max), toetsrente, flp, aow: aowBereikt(geb)};
+}
+
+/* ============================ Weergave ============================ */
+function overzichtHTML(k){
+  return `
+  <div class="overzicht">
+    <dl class="posten">
+      <div class="kop"><dt>Kosten aankoop huis</dt><dd></dd></div>
+      <div><dt>${k.verbouwen && k.gefinVerbouwing>0 ? `Eigen inbreng verbouwing (totale verbouwing ${eur(k.R)})` : "Verbouwing"}</dt><dd>${eur(k.verbouwen ? k.eigenInbrengVerbouwing : 0)}</dd></div>
+      <div><dt>Overdrachtsbelasting</dt><dd>${eur(k.ovb)}</dd></div>
+      <div><dt>Notariskosten leveringsakte</dt><dd>${eur(CONFIG.notarisLevering)}</dd></div>
+      <div class="kop"><dt>Hypotheekkosten</dt><dd></dd></div>
+      <div><dt>Notariskosten hypotheekakte</dt><dd>${eur(CONFIG.notarisHypotheek)}</dd></div>
+      <div><dt>Taxatiekosten + advieskosten</dt><dd>${eur(CONFIG.taxatie+CONFIG.advies)}</dd></div>
+      <div><dt>Nationale Hypotheek Garantie</dt><dd>${eur(k.nhgKosten)}</dd></div>
+    </dl>
+    <div class="totalen">
+      <div class="blok"><span class="l">Kosten aankoop huis</span><span class="w">${eur(k.aankoop)}</span></div>
+      <div class="blok"><span class="l">Koopsom</span><span class="w">${eur(k.prijs)}</span></div>
+      <div class="blok"><span class="l">Hypotheekkosten</span><span class="w">${eur(k.hypKosten)}</span></div>
+      <div class="blok groen">
+        <div><span>Totale kosten</span><span>${eur(k.totaal)}</span></div>
+        <div><span>Aftrek eigen geld</span><span>${eur(k.totaal-k.teFinancieren)}</span></div>
+      </div>
+      <div class="blok fin"><span>Te financieren</span><strong>${eur(k.teFinancieren)}</strong></div>
+    </div>
+  </div>`;
+}
+
+function meldingenStap2(k){
+  const box = $("#meldingenStap2"); let h="";
+  if(k.overschot>0){
+    h += `<div class="melding fout" role="alert"><strong>De gewenste financiering is niet haalbaar</strong> aangezien u meer leent dan de wettelijk toegestane 100% van de waarde van de woning. Dit kunt u oplossen door de gewenste hoofdsom te verlagen naar ${eur(k.W)}.<br><button type="button" class="btn klein sec" id="fixHoofdsom">Hoofdsom verlagen naar ${eur(k.W)}</button></div>`;
+  } else if(k.tekort>0){
+    h += `<div class="melding fout" role="alert"><strong>De gewenste financiering is niet haalbaar</strong> aangezien de kosten hoger zijn dan de gewenste hoofdsom. Dit kunt u oplossen door ${eur(k.tekort)} eigen geld in te leggen.<br><button type="button" class="btn klein sec" id="fixEigenGeld">${eur(k.tekort)} eigen geld invullen</button></div>`;
+  }
+  if(box.dataset.h!==h){ box.innerHTML=h; box.dataset.h=h; }
+  const fh=$("#fixHoofdsom"); if(fh) fh.onclick=()=>{ zet($("#hoofdsom"),k.W); update(); $("#hoofdsom").focus(); };
+  const fe=$("#fixEigenGeld"); if(fe) fe.onclick=()=>{ kiesRadio("eigengeld","ja"); zet($("#eigenGeld"),k.tekort); update(); $("#eigenGeld").focus(); };
+}
+
+function kiesRadio(name,val){ const el=document.querySelector(`input[name="${name}"][value="${val}"]`); if(el){ el.checked=true; } toonUitklap(); }
+function toonUitklap(){
+  $("#verbouwenUit").hidden = radio("verbouwen")!=="ja";
+  $("#eigengeldUit").hidden = radio("eigengeld")!=="ja";
+  $("#partnerUit").hidden = radio("partner")!=="ja";
+  $("#schuldenUit").hidden = radio("schulden")!=="ja";
+  $("#erfpachtUit").hidden = radio("erfpacht")!=="ja";
+}
+
+function bouwRvp(){
+  const box=$("#rvpKeuze");
+  box.innerHTML = Object.keys(CONFIG.rentes).map(j=>`<label><input type="radio" name="rvp" value="${j}" ${+j===CONFIG.standaardRvp?"checked":""}><span class="knop"><span>${j} jr</span><span class="rente" data-rvp="${j}"></span></span></label>`).join("");
+}
+
+let laatste = {};
+function update(){
+  toonUitklap();
+  const k = kosten();
+  // NHG-schakelaar
+  $("#nhgVeld").hidden = !k.nhgMogelijk;
+  $("#nhgNiet").hidden = k.nhgMogelijk || !k.prijs;
+  $$("[data-overzicht]").forEach(el=>{ el.innerHTML = overzichtHTML(k); });
+  meldingenStap2(k);
+
+  // Stap 3
+  const tar = rvpTarieven(k);
+  $$("#rvpKeuze .rente").forEach(s=>{ const r=tar[s.dataset.rvp].rente; s.textContent=pct(r); s.closest("label").querySelector("input").setAttribute("aria-label",`${s.dataset.rvp} jaar vast, ${pct(r)} rente`); });
+  const rvp = +(radio("rvp")||CONFIG.standaardRvp);
+  const rente = tar[rvp].rente;
+  $$(".rvpJaar").forEach(e=>e.textContent=rvp);
+  const sch = aflosschema(k.teFinancieren, k.W, rvp, k.nhg);
+  $("#afmLening").textContent = eur(k.teFinancieren);
+  $("#afmRente").textContent = pct(rente);
+  $("#afmJkp").textContent = pct(r2(effectief(rente)));
+  const mh = maxHypotheek(k, rvp);
+  const lbl = $("#energielabel").value;
+  $("#ebv").textContent = eur(CONFIG.ebv[lbl]);
+  $("#ebvRegel").hidden = !CONFIG.ebv[lbl];
+  const m3 = $("#meldingenStap3"); let h="";
+  if(mh){
+    $("#afmMaand").textContent = eur(sch.eerste);
+    $("#afmTotaal").textContent = eur(sch.totaal);
+    $("#maxHyp").textContent = eur(mh.max);
+    const ok = mh.max >= k.teFinancieren;
+    $("#haalbaarBlok").className = "blok haalbaar " + (ok?"ok":"nok");
+    $("#haalbaarStatus").textContent = ok ? "✓ Het te financieren bedrag past binnen uw leenruimte" : "✗ Het te financieren bedrag is hoger dan uw leenruimte";
+    if(!ok) h += `<div class="melding fout"><strong>De gewenste financiering is niet haalbaar</strong> aangezien u meer leent dan wat toegestaan is met uw maandelijkse inkomsten. Om de financiering akkoord te krijgen dient u ${eur(k.teFinancieren-mh.max)} eigen geld in te leggen of een lager bedrag te lenen.</div>`;
+    if(mh.aow) h += `<div class="melding let-op">U heeft de AOW-leeftijd bereikt. Wij rekenen met de normen voor AOW-gerechtigden. Uw adviseur bekijkt welk inkomen na pensionering meetelt.</div>`;
+  } else {
+    $("#afmMaand").textContent = k.teFinancieren ? eur(sch.eerste) : "–";
+    $("#afmTotaal").textContent = k.teFinancieren ? eur(sch.totaal) : "–";
+    $("#maxHyp").textContent = "–";
+    $("#haalbaarBlok").className = "blok haalbaar";
+    $("#haalbaarStatus").textContent = "Vul uw geboortedatum en inkomen in";
+  }
+  if(k.overschot>0) h += `<div class="melding fout"><strong>De gewenste financiering is niet haalbaar</strong> aangezien u meer leent dan de wettelijk toegestane 100% van de waarde van de woning. Ga terug naar stap 2 om dit aan te passen.</div>`;
+  if(m3.dataset.h!==h){ m3.innerHTML=h; m3.dataset.h=h; }
+
+  // Stap 4
+  $("#resBedrag").textContent = eur(k.teFinancieren);
+  $("#resMaand").textContent = eur(sch.eerste);
+  laatste = {k, rvp, rente, sch, mh};
+}
+
+/* ============================ Validatie ============================ */
+function veldFout(input, wrap, fout, toon){
+  fout.hidden = !toon; input.setAttribute("aria-invalid", toon ? "true" : "false");
+  if(wrap) wrap.classList.toggle("ongeldig", toon);
+}
+function valideer(stap){
+  if(stap===1){
+    const leeg = !getal($("#vraagprijs"));
+    veldFout($("#vraagprijs"),$("#vraagprijsWrap"),$("#vraagprijsFout"),leeg);
+    if(leeg){ $("#vraagprijs").focus(); return false; }
+  }
+  if(stap===2){
+    const k = kosten();
+    if(!k.H){ $("#hoofdsom").focus(); return false; }
+    if(k.overschot>0 || k.tekort>0){ const b=$("#meldingenStap2 button"); (b||$("#hoofdsom")).focus(); return false; }
+  }
+  if(stap===3){
+    let ok=true, eerste=null;
+    const geb = geboortedatum();
+    $("#datumFout").hidden = !!geb; $("#datumWrap").classList.toggle("ongeldig",!geb);
+    ["#gebDag","#gebMaand","#gebJaar"].forEach(s=>$(s).setAttribute("aria-invalid",geb?"false":"true"));
+    if(!geb){ ok=false; eerste=$("#gebDag"); }
+    const ink = getal($("#inkomen"))>0;
+    veldFout($("#inkomen"),$("#inkomenWrap"),$("#inkomenFout"),!ink);
+    if(!ink){ ok=false; eerste = eerste || $("#inkomen"); }
+    if(kosten().overschot>0){ ok=false; }
+    if(eerste) eerste.focus();
+    return ok;
+  }
+  return true;
+}
+
+/* ============================ Navigatie ============================ */
+const STAPNAMEN = ["Start","Mijn totale kosten","Kan ik dit bedrag lenen?","Mijn overzicht"];
+function tekenVoortgang(){
+  const ol=$("#stappenLijst");
+  ol.innerHTML = STAPNAMEN.map((n,i)=>{
+    const s=i+1, actief = S.stap===s || (s===4 && S.stap===5), klaar = s<S.stap || (s<=S.verst && !actief);
+    const cls = actief ? "actief" : (klaar ? "klaar" : "");
+    const inhoud = (klaar && s<=S.verst)
+      ? `<button type="button" data-ga="${s}"><span class="txt">${n}</span><span class="sr-only"> (stap ${s} van 4, voltooid)</span></button>`
+      : `<span class="lbl"><span class="txt">${n}</span><span class="sr-only"> (stap ${s} van 4${actief?", huidige stap":""})</span></span>`;
+    return `<li class="${cls}" ${actief?'aria-current="step"':""}>${inhoud}<span class="stip" aria-hidden="true"></span></li>`;
+  }).join("");
+  $("#pijlTerug").hidden = S.stap<=1;
+  $("#pijlVerder").hidden = S.stap>=4;
+}
+function gaNaar(n){
+  n = Math.max(0, Math.min(5, n));
+  if(n>S.stap){ for(let s=Math.max(1,S.stap); s<n; s++){ if(!valideer(s)) { if(s!==S.stap) toonStap(s); return; } } }
+  if(n===2 && S.stap===1){
+    // Bij binnenkomst stap 2: hoofdsom = vraagprijs als nog niet gezet; tekort direct voorstellen (zoals origineel)
+    if(!getal($("#hoofdsom"))) zet($("#hoofdsom"), getal($("#vraagprijs")));
+    const k=kosten();
+    if(!S.eigenGeldVoorgesteld && k.tekort>0){ kiesRadio("eigengeld","ja"); zet($("#eigenGeld"),k.tekort); S.eigenGeldVoorgesteld=true; }
+  }
+  toonStap(n);
+}
+function toonStap(n){
+  S.stap=n; S.verst=Math.max(S.verst,Math.min(n,4));
+  $$(".stap").forEach(s=>s.hidden = +s.dataset.stap!==n);
+  $("#voortgangBalk").hidden = n===0;
+  update(); tekenVoortgang();
+  const h = document.querySelector(`.stap[data-stap="${n}"] h1`);
+  window.scrollTo(0,0);
+  if(h) h.focus({preventScroll:true});
+  document.title = (n===0 ? "" : (n===5 ? "Hoe nu verder – " : `Stap ${Math.min(n,4)} van 4: ${STAPNAMEN[Math.min(n,4)-1]} – `)) + "MUNT Hypotheken – Hypotheekberekening";
+}
+
+/* ============================ Rapport (print via window.open) ============================ */
+function rapportHTML(){
+  update();
+  const {k,rvp,rente,sch,mh} = laatste;
+  const datum = new Date().toLocaleDateString("nl-NL",{day:"numeric",month:"long",year:"numeric"});
+  const nu = new Date();
+  // Jaaroverzicht: eerste maand, daarna steeds dezelfde maand in het volgende jaar
+  const rijen=[]; let vorige=null;
+  for(let j=0;j<30;j++){
+    const m = sch.maanden[j*12];
+    const label = j===0 ? `${nu.getFullYear()} (1e maand)` : String(nu.getFullYear()+j);
+    rijen.push(`<tr><td>${label}</td><td>${eur(m.saldo)}</td><td>${pct(m.rente)}</td><td>${eur(m.rd)}</td><td>${eur(m.afl)}</td><td>${eur(m.termijn)}</td></tr>`);
+    if(vorige && m.rente<vorige.rente){
+      rijen.push(`<tr class="afslag"><td>Afslag</td><td></td><td>▾ -${nf2.format(vorige.rente-m.rente)}%</td><td>▾ ${eur(m.rd-vorige.rd)}</td><td></td><td></td></tr>`);
+    }
+    vorige=m;
+  }
+  const verbouwRegel = k.verbouwen ? `<tr><td>Verbouwing (eigen inbreng)</td><td>${eur(k.eigenInbrengVerbouwing)}</td></tr>` : `<tr><td>Verbouwing</td><td>${eur(0)}</td></tr>`;
+  return `<!doctype html><html lang="nl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Uw persoonlijke hypotheekberekening – ${datum}</title>
+<style>
+body{font:14px/1.5 "Open Sans","Segoe UI",Arial,sans-serif;color:#1f2a2e;margin:0;padding:24px;max-width:960px;margin:auto}
+h1{font-size:26px;text-transform:uppercase;margin:0}h2{font-size:17px;text-transform:uppercase;border-bottom:3px solid #00d796;padding-bottom:4px;margin:28px 0 10px}
+.kop{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;border-bottom:1px solid #ccc;padding-bottom:12px}
+.kern{display:flex;gap:16px;margin:16px 0}.kern div{flex:1;background:#3d3d3d;color:#fff;padding:12px 16px;border-radius:6px}.kern strong{display:block;font-size:20px}
+table{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}th,td{text-align:left;padding:6px 8px;border-bottom:1px solid #ddd}th{background:#f2f3f1}
+td:not(:first-child),th:not(:first-child){text-align:right}.afslag td{color:#006b4c;font-size:12px;border-bottom:1px dashed #9cd}
+.tot td{font-weight:700;border-top:2px solid #1f2a2e}ol.stappen{display:flex;gap:12px;padding:0;list-style:none;counter-reset:s}ol.stappen li{flex:1;background:#e6fbf4;padding:10px;border-radius:6px}
+ul{padding-left:20px}.klein{font-size:12px;color:#4d5a5f}.knop{position:fixed;right:16px;top:16px;background:#00d796;color:#062a1d;border:0;border-radius:6px;padding:10px 16px;font:inherit;font-weight:700;cursor:pointer}
+.breed{overflow-x:auto}
+@media print{.knop{display:none}body{padding:0}h2{break-after:avoid}.pb{break-before:page}}
+</style></head><body>
+<button class="knop" onclick="window.print()">Afdrukken / opslaan als PDF</button>
+<div class="kop"><div><h1>Uw persoonlijke hypotheekberekening</h1><div>${datum}</div></div><div><strong>MUNT</strong> HYPOTHEKEN</div></div>
+<div class="kern"><div>Hypotheekbedrag<strong>${eur(k.teFinancieren)}</strong></div><div>Bruto maandlast<strong>${eur(sch.eerste)}</strong></div></div>
+
+<h2>Wat moet u doen?</h2>
+<ol class="stappen"><li><strong>Stap 1</strong><br>Lees uw hypotheekberekening rustig door</li><li><strong>Stap 2</strong><br>Neem deze mee naar uw hypotheekadviseur</li><li><strong>Stap 3</strong><br>Vraag samen met uw hypotheekadviseur het renteaanbod aan</li><li><strong>Stap 4</strong><br>Een stap dichterbij uw droomwoning</li></ol>
+
+<h2>Wat is dit voor document?</h2>
+<p>Na het invoeren van uw gegevens weet u hoe uw persoonlijke renteaanbod eruit zou kunnen zien, als u deze samen met uw adviseur bij MUNT Hypotheken zou aanvragen. Wij proberen de zaken hiermee zo simpel mogelijk te maken. Maar hypotheken zijn natuurlijk toch een beetje ingewikkeld. Het gaat over veel geld en een langjarige verplichting. Daarom adviseren wij om u bij het afsluiten van een hypotheek te laten bijstaan door een onafhankelijke adviseur.</p>
+<p>U kunt aan dit document geen rechten ontlenen, het is nadrukkelijk geen uitnodiging om met ons een overeenkomst aan te gaan. Dat klinkt onaardig, maar wij vinden het verstandig als u eerst met een adviseur overlegt.</p>
+<p>Wij hebben de door u opgegeven gegevens uitsluitend gebruikt voor het maken van deze hypotheekberekening. Wij hebben deze gegevens niet opgeslagen. Daardoor weten wij op dit moment niets van u en kunnen wij dus ook geen "echt" renteaanbod voor u maken. Later, wanneer u meer gegevens aan ons heeft doorgegeven, doen we dat natuurlijk graag!</p>
+<p>Het afsluiten van een hypotheek is een serieuze aangelegenheid. Wij zullen u vragen om veel papieren aan te leveren en zullen diverse controles doen. Aan de andere kant, een hypotheek is een lening voor uw huis, niet meer en niet minder. Wij proberen het zo simpel mogelijk te maken en wij zijn ervan overtuigd dat uw adviseur u kan helpen bij het maken van de juiste keuzes.</p>
+
+<h2>De voordelen van een MUNT Hypotheek</h2>
+<ul>
+<li>U mag bij MUNT Hypotheken altijd extra aflossen. Dat mag onbeperkt en is zonder kosten als u aflost met uw eigen geld.</li>
+<li>Het rentepercentage dat u betaalt, bepalen wij aan de hand van de hoogte van uw hypotheek en de waarde van uw woning. Als u voldoende heeft afgelost, gaat u automatisch minder rente betalen. Hierdoor betaalt u over de looptijd veel minder rente.</li>
+<li>Is de rente voor soortgelijke geldleningen van MUNT op de dag dat uw hypotheekakte passeert lager dan de rente in het aanbod? Dan krijgt u die lagere rente. U profiteert daardoor van een daling van de tarieven van MUNT Hypotheken tot het moment dat uw hypotheekakte bij de notaris passeert. Als de rente op de dag van passeren hoger is, betaalt u nooit meer dan in uw renteaanbod staat vermeld.</li>
+<li>MUNT Hypotheken biedt uitsluitend hypotheken aan. U heeft daardoor geen verplichting om bijvoorbeeld een nieuwe betaalrekening te openen of andere producten af te nemen.</li>
+<li>U bent helemaal vrij in de keuze waar u een eventuele overlijdensrisicoverzekering wilt afsluiten. Zo kunt u altijd de voor u meest voordelige keuze maken.</li>
+<li>MUNT Hypotheken is een betrouwbare aanbieder met funding door oerdegelijke, Nederlandse pensioenfondsen.</li>
+<li>De actuele hypotheekrentetarieven kunt u vinden op www.munthypotheken.nl/renteoverzicht.</li>
+<li>Voor vragen: kijk op www.munthypotheken.nl of praat met uw adviseur.</li>
+</ul>
+
+<h2 class="pb">Totale kosten aankoop woning (indicatie)</h2>
+<table><tbody>
+${verbouwRegel}
+<tr><td>Overdrachtsbelasting</td><td>${eur(k.ovb)}</td></tr>
+<tr><td>Notariskosten leveringsakte</td><td>${eur(CONFIG.notarisLevering)}</td></tr>
+<tr class="tot"><td>Kosten aankoop woning</td><td>${eur(k.aankoop)}</td></tr>
+<tr><td>Koopsom</td><td>${eur(k.prijs)}</td></tr>
+<tr><td>Notariskosten hypotheekakte</td><td>${eur(CONFIG.notarisHypotheek)}</td></tr>
+<tr><td>Taxatiekosten + advieskosten</td><td>${eur(CONFIG.taxatie+CONFIG.advies)}</td></tr>
+<tr><td>Kosten Nationale Hypotheek Garantie (NHG)</td><td>${eur(k.nhgKosten)}</td></tr>
+<tr class="tot"><td>Hypotheekkosten</td><td>${eur(k.hypKosten)}</td></tr>
+<tr class="tot"><td>Totale kosten</td><td>${eur(k.totaal)}</td></tr>
+<tr><td>Aftrek eigen geld</td><td>${eur(k.totaal-k.teFinancieren)}</td></tr>
+<tr class="tot"><td>Te financieren</td><td>${eur(k.teFinancieren)}</td></tr>
+${mh ? `<tr><td>Financieel haalbaar</td><td>${eur(mh.max,2)}</td></tr>` : ""}
+${CONFIG.ebv[$("#energielabel").value] ? `<tr><td>Extra ruimte voor EBV</td><td>${eur(CONFIG.ebv[$("#energielabel").value])}</td></tr>` : ""}
+</tbody></table>
+
+<h2>Uw maandlast (indicatie)</h2>
+<div class="breed"><table><thead><tr><th>Totale lening</th><th>Vaste rente</th><th>Jaarlijks kostenpercentage</th><th>Bruto maandbedrag</th><th>Looptijd van de lening</th><th>Totaalbedrag</th></tr></thead>
+<tbody><tr><td>${eur(k.teFinancieren)}</td><td>${pct(rente)}</td><td>${pct(r2(effectief(rente)))}</td><td>${eur(sch.eerste,2)}</td><td>360 maanden</td><td>${eur(sch.totaal,2)}</td></tr></tbody></table></div>
+<p class="klein">Dit betreft een annuïteitenhypotheek met een rentevaste periode van ${rvp} jaar waarbij de aanname is gedaan dat de rente gedurende de looptijd van 360 maanden vast staat. De getoonde maandlast is de bruto maandlast. Hoogstwaarschijnlijk heeft u recht op hypotheekrenteaftrek. Uw hypotheekadviseur kan voor u de netto maandlasten berekenen.</p>
+<p class="klein">Notariskosten, taxatiekosten en advieskosten die we gebruiken in deze voorbeeldberekening zijn gemiddelden. De daadwerkelijke kosten kunnen hiervan afwijken. Daarom zijn deze bij de bepaling van het jaarlijks kostenpercentage (JKP) niet meegenomen. Het JKP bestaat uitsluitend uit de effectieve rente die u aan MUNT Hypotheken zou betalen, als u een hypotheek bij ons zou krijgen.</p>
+<p class="klein">De extra ruimte voor EBV is alleen te gebruiken voor één of meer van de goedgekeurde energiebesparende maatregelen. Welke dit zijn, vindt u op www.munthypotheken.nl/duurzaamheid/mijn-woning-verduurzamen/. De maandelijkse lasten voor rente en terugbetaling EBV zijn in de maandlastenberekening niet meegenomen.</p>
+
+<h2 class="pb">Verloop restschuld en maandlasten (indicatie)</h2>
+<p>Hoeveel betaalt u eigenlijk aan rente en aflossing per maand tijdens de looptijd van uw hypotheek?</p>
+<p class="klein">Dit betreft een annuïteitenhypotheek met een rentevaste periode van ${rvp} jaar, waarbij de aanname is gedaan dat de rente gedurende de looptijd van 360 maanden vast staat. Natuurlijk dient dit overzicht alleen als indicatie en zijn de getallen daarin alleen van toepassing als er de komende 30 jaar niets verandert. Dat komt niet zo heel vaak voor.</p>
+<div class="breed"><table><thead><tr><th>Jaar</th><th>Schuldrest</th><th>Rente</th><th>Rentelast</th><th>Aflossing</th><th>Bruto maandlast</th></tr></thead>
+<tbody>${rijen.join("")}
+<tr class="tot"><td>Totaal</td><td></td><td></td><td>${eur(sch.totRente,2)}</td><td>${eur(k.teFinancieren)}</td><td>${eur(sch.totaal,2)}</td></tr>
+</tbody></table></div>
+<p><strong>Totale investering: ${eur(sch.totaal,2)}</strong></p>
+
+<h2>Toelichting verloop restschuld en maandlasten</h2>
+<p>De hypotheekvorm waarvoor u heeft gekozen is een annuïteitenhypotheek. Een annuïteitenhypotheek is een lening voor een huis, die u in maximaal dertig jaar aflost door maandelijks hetzelfde bedrag te betalen. Het maandbedrag bestaat uit een deel rente en een deel aflossing. De verhouding tussen die twee verandert ongemerkt elke maand een beetje. De eerste jaren betaalt u vooral rente, later gaat u meer aflossen. Het rentedeel wordt dus jaarlijks kleiner. Dat betekent dat de nettolasten van uw hypotheek langzaam stijgen.</p>
+<p>Hoe meer u leent ten opzichte van de waarde van uw huis, des te groter is het risico. Voor dit risico rekenen hypotheekaanbieders een zogenaamde renteopslag. Deze opslag is al verwerkt in onze rentes. Bij MUNT Hypotheken passen wij de renteopslag automatisch aan als u aflost op uw hypotheek. Een opslag wordt aangepast of vervalt soms zelfs helemaal als de verhouding van de totale hypotheek ten opzichte van de waarde van het huis daalt tot onder een van de opslaggrenzen. Hierdoor betaalt u over de looptijd van uw hypotheek veel minder rente. In het overzicht met het verloop van de maandlast hebben wij deze korting voor u doorgerekend.</p>
+<p><strong>Belangrijk om te weten:</strong></p>
+<ul>
+<li>Er wordt 30 jaar gerekend met het rentepercentage van de gekozen rentevaste periode, ook al is dat geen 30 jaar vast.</li>
+<li>Gedurende de gekozen rentevaste periode is de bruto maandlast voor deze hypotheek gebaseerd op de schuldrest ten opzichte van de waarde van het onderpand. Hierbij hebben wij geen rekening gehouden met een aanname voor wat betreft de premie van een eventuele overlijdensrisicoverzekering.</li>
+<li>Hypotheekrente is veelal aftrekbaar voor de inkomstenbelasting. Hierdoor zullen de werkelijke (netto) maandlasten lager uitkomen. Ga naar uw adviseur voor een overzicht op maat.</li>
+</ul>
+
+<h2>Ons advies: laat u adviseren</h2>
+<p>Goed hypotheekadvies is goud waard. Laat u daarom adviseren door een onafhankelijke hypotheekadviseur. Grote kans dat die u een MUNT Hypotheek aanraadt, omdat die het best bij u past.</p>
+<p>Zoek een adviseur bij u in de buurt op: https://www.munthypotheken.nl/vind-een-adviseur/</p>
+
+<h2>Waar u rekening mee moet houden</h2>
+<p>Als u een hypotheek hebt, loopt u verschillende betalingsrisico's. Zoals een schuld die overblijft als uw huis verkocht wordt of woonlasten die niet meer passen bij uw inkomen. De betaalbaarheid van uw hypotheek kan minder worden door allerlei factoren:</p>
+<ul>
+<li>De woonlasten kunnen stijgen door bijvoorbeeld een verhoging van het rentepercentage.</li>
+<li>Het kan moeilijk worden uw hypotheeklasten te betalen als uw overige uitgaven stijgen door bijvoorbeeld ziekte, gezinsuitbreiding of overheidsmaatregelen.</li>
+<li>Uw inkomen kan dalen. Als u bijvoorbeeld minder gaat werken of als u van baan verandert.</li>
+<li>U loopt het risico een schuld over te houden als de opbrengst van de verkoop van uw huis lager is dan uw hypotheekschuld.</li>
+</ul>
+<p class="klein">Deze hypotheekberekening wordt u aangeboden door MUNT Hypotheken, Bezuidenhoutseweg 16B, 2594 AV Den Haag. Rentetarieven en normen per ${CONFIG.tariefDatum}. Een rekentool van de Nationale Hypotheekbond.</p>
+<script>setTimeout(function(){window.focus();window.print();},400)<\/script>
+</body></html>`;
+}
+function openRapport(){
+  const w = window.open("", "_blank");
+  if(!w){ $("#popupMelding").textContent = "Het rapport kon niet worden geopend. Sta pop-ups toe voor deze pagina en probeer het opnieuw."; return false; }
+  w.document.open(); w.document.write(rapportHTML()); w.document.close();
+  return true;
+}
+
+/* ============================ Init ============================ */
+function init(){
+  bouwRvp();
+  $$(".tariefDatum").forEach(e=>e.textContent=CONFIG.tariefDatum);
+  $$(".nhgGrens").forEach(e=>e.textContent=eur(CONFIG.nhgKostengrens));
+  $$("input.bedrag").forEach(el=>{
+    el.addEventListener("input",()=>{ formatteerVeld(el);
+      if(el.id==="verbouwKosten" && !S.waardeNaHandmatig){ const k=getal($("#vraagprijs")), r=getal(el); zet($("#waardeNa"), r ? k + CONFIG.waardestijgingVerbouwing*r : 0); }
+      if(el.id==="waardeNa") S.waardeNaHandmatig = true;
+      if(el.id==="vraagprijs" && S.verst<2) $("#hoofdsom").value="";
+      if(el.getAttribute("aria-invalid")==="true" && getal(el)) { el.setAttribute("aria-invalid","false"); const f=document.getElementById(el.id+"Fout"); if(f) f.hidden=true; const w=document.getElementById(el.id+"Wrap"); if(w) w.classList.remove("ongeldig"); }
+      update(); });
+  });
+  ["#gebDag","#gebMaand","#gebJaar"].forEach(s=>$(s).addEventListener("input",e=>{ e.target.value=e.target.value.replace(/\D/g,""); update(); }));
+  document.addEventListener("change",e=>{ if(e.target.matches("input[type=radio],select")) update(); });
+  document.addEventListener("click",e=>{ const b=e.target.closest("[data-ga]"); if(b){ e.preventDefault(); gaNaar(+b.dataset.ga); } });
+  $("#pijlTerug").addEventListener("click",()=>gaNaar(S.stap===5?4:S.stap-1));
+  $("#pijlVerder").addEventListener("click",()=>gaNaar(S.stap+1));
+  $("#downloadRapport").addEventListener("click",()=>{ if(openRapport()) toonStap(5); });
+  $("#opnieuwRapport").addEventListener("click",openRapport);
+  // Enter in een invoerveld = verder
+  document.addEventListener("keydown",e=>{ if(e.key==="Enter" && e.target.matches("input:not([type=radio])")){ e.preventDefault(); gaNaar(S.stap+1); } });
+  // Vraagprijs via URL (?vraagprijs=350000), voor koppeling vanuit woningpagina
+  const q = new URLSearchParams(location.search).get("vraagprijs");
+  if(q && /^\d+$/.test(q)) zet($("#vraagprijs"), +q);
+  toonStap(0);
+}
+init();
+</script>
+</body>
+</html>
