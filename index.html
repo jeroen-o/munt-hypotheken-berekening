@@ -168,7 +168,8 @@ details.info p,details.info ul{margin:.4rem 0}
 .cirkel .banden div:last-child{background:#3d3d3d;clip-path:polygon(4% 0,96% 0,89% 100%,11% 100%)}
 .resultaat .knoppen{justify-content:center}
 .footer{padding:24px 0 32px;text-align:center}
-.footer img{height:40px;width:auto}
+.footer img{height:70px;width:auto}
+.footer-tekst{margin:0 0 6px;font-size:.85rem;color:var(--inkt-zacht)}
 .tarief-stempel{font-size:.82rem;color:var(--inkt-zacht);text-align:center;margin:18px 0 0}
 
 /* ---------- Dialoog ---------- */
@@ -525,7 +526,8 @@ dialog::backdrop{background:rgba(0,0,0,.45)}
 </main>
 
 <footer class="footer">
-  <img src="assets/rekentool-van-nhb.svg" alt="Een rekentool van de Nationale Hypotheekbond">
+  <p class="footer-tekst">Een rekentool van</p>
+  <img src="assets/blinqx-verzekering-hypotheek.png" alt="Blinqx Verzekering &amp; Hypotheek" width="207" height="70">
 </footer>
 
 <script>
@@ -1018,7 +1020,7 @@ ${CONFIG.ebv[$("#energielabel").value] ? `<tr><td>Extra ruimte voor EBV</td><td>
 <li>Uw inkomen kan dalen. Als u bijvoorbeeld minder gaat werken of als u van baan verandert.</li>
 <li>U loopt het risico een schuld over te houden als de opbrengst van de verkoop van uw huis lager is dan uw hypotheekschuld.</li>
 </ul>
-<p class="klein">Deze hypotheekberekening wordt u aangeboden door MUNT Hypotheken, Bezuidenhoutseweg 16B, 2594 AV Den Haag. Rentetarieven en normen per ${CONFIG.tariefDatum}. Een rekentool van de Nationale Hypotheekbond.</p>
+<p class="klein">Deze hypotheekberekening wordt u aangeboden door MUNT Hypotheken, Bezuidenhoutseweg 16B, 2594 AV Den Haag. Rentetarieven en normen per ${CONFIG.tariefDatum}. Een rekentool van Blinqx Verzekering &amp; Hypotheek.</p>
 </main>
 <script>setTimeout(function(){window.focus();window.print();},400)<\/script>
 </body></html>`;
