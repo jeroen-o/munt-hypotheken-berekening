@@ -1,0 +1,1068 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MUNT Hypotheken – Hypotheekberekening</title>
+<meta name="description" content="Bereken in vier stappen uw totale kosten, of u het bedrag kunt lenen en uw voorbeeld-renteaanbod bij MUNT Hypotheken.">
+<style>
+:root{
+  --groen:#00d796;          /* MUNT-merkgroen: alleen als vlak/accent, nooit als tekstkleur op wit */
+  --groen-donker:#006b4c;   /* tekst/actieve staat op wit: contrast 6,6:1 */
+  --groen-licht:#e6fbf4;
+  --inkt:#1f2a2e;           /* hoofdtekst: 14:1 */
+  --inkt-zacht:#4d5a5f;     /* secundaire tekst: 7:1 */
+  --lijn:#c9d1d3;
+  --vlak:#f2f3f1;
+  --wit:#ffffff;
+  --fout:#b3261e;
+  --fout-vlak:#fdecea;
+  --let-op:#7a4b00;
+  --let-op-vlak:#fff4df;
+  --donker-blok:#3f4a4e;    /* 'Financieel haalbaar'-blok, wit erop: 9:1 */
+  --focus:#1d3459;
+  --radius:6px;
+  color-scheme: light;
+}
+*,*::before,*::after{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--wit);color:var(--inkt);font:16px/1.5 "Open Sans","Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+a{color:var(--groen-donker)}
+a:hover{text-decoration-thickness:2px}
+:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
+.sr-only{position:absolute!important;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+.skip{position:absolute;left:8px;top:-60px;background:var(--focus);color:#fff;padding:10px 16px;border-radius:var(--radius);z-index:100;text-decoration:none}
+.skip:focus{top:8px}
+h1{font-size:1.6rem;line-height:1.25;text-transform:uppercase;letter-spacing:.01em;margin:0 0 1.25rem}
+h1:focus{outline:none}
+h2{font-size:1.15rem;margin:0 0 .75rem}
+.wrap{max-width:1180px;margin:0 auto;padding:0 16px}
+
+/* ---------- Voortgang ---------- */
+.voortgang{background:var(--vlak);border-bottom:1px solid #dcdedb}
+.voortgang .wrap{display:flex;align-items:center;gap:12px;padding-top:14px;padding-bottom:14px}
+.pijl{flex:0 0 44px;height:44px;border:0;border-radius:var(--radius);background:var(--groen);color:#062a1d;cursor:pointer;display:grid;place-items:center}
+.pijl[hidden]{display:block;visibility:hidden}
+.pijl svg{width:18px;height:18px}
+.stappen{flex:1;list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(4,1fr);counter-reset:s}
+.stappen li{position:relative;text-align:center;padding-top:26px}
+.stappen li::before{content:"";position:absolute;top:31px;left:-50%;width:100%;height:4px;background:#7d8689}
+.stappen li:first-child::before{display:none}
+.stappen li.klaar::before,.stappen li.actief::before{background:var(--groen)}
+.stappen .stip{position:absolute;top:26px;left:50%;width:14px;height:14px;margin-left:-7px;border-radius:50%;background:#6d777a;z-index:1}
+.stappen li.klaar .stip,.stappen li.actief .stip{background:var(--groen)}
+.stappen li.actief .stip{box-shadow:0 0 0 4px var(--wit),0 0 0 6px var(--groen-donker)}
+.stappen button,.stappen span.lbl{position:absolute;top:0;left:0;right:0;font:inherit;font-size:.82rem;background:none;border:0;padding:0 2px;color:var(--inkt-zacht);cursor:default;line-height:1.3;min-height:24px}
+.stappen li.klaar button{color:var(--groen-donker);cursor:pointer;text-decoration:underline;text-underline-offset:2px}
+.stappen li.actief .lbl{color:var(--inkt);font-weight:700}
+.stap-teller{display:none;font-size:.9rem;color:var(--inkt-zacht);margin:0 0 .25rem}
+
+main{padding:28px 0 40px}
+.stap[hidden]{display:none}
+
+/* ---------- Start ---------- */
+.kaarten{list-style:none;padding:0;margin:0 0 28px;display:grid;grid-template-columns:repeat(4,1fr);gap:20px}
+.kaarten li{text-align:center}
+.kaarten svg{width:120px;height:120px;display:block;margin:0 auto 10px}
+.kaarten strong{display:block}
+.kaarten span{color:var(--inkt-zacht);font-size:.95rem}
+.intro{max-width:760px;margin:0 auto;text-align:center}
+
+/* ---------- Formulier ---------- */
+.grid{display:grid;grid-template-columns:minmax(0,380px) minmax(0,1fr);gap:28px;align-items:start}
+.paneel{border:1px solid var(--lijn);border-radius:var(--radius);padding:20px}
+.veld{margin:0 0 22px}
+.veld:last-child{margin-bottom:0}
+.veld>label,.veld legend,.vraag{display:block;font-size:1.05rem;margin:0 0 8px;padding:0}
+fieldset{border:0;margin:0 0 22px;padding:0;min-width:0}
+.verplicht{color:var(--fout);font-weight:700}
+.euro{display:flex;align-items:stretch;border:1px solid #7f8a8d;border-radius:var(--radius);background:#fff;max-width:100%}
+.euro:focus-within{outline:3px solid var(--focus);outline-offset:2px}
+.euro span{padding:0 4px 0 12px;display:flex;align-items:center;color:var(--inkt-zacht)}
+.euro input,.tekst{flex:1;min-width:0;border:0;padding:11px 12px 11px 4px;font:inherit;font-size:1.05rem;background:transparent;color:var(--inkt)}
+.euro input:focus,.datum input:focus{outline:none}
+.euro.ongeldig,.datum.ongeldig input{border-color:var(--fout);box-shadow:0 0 0 1px var(--fout)}
+select{width:100%;font:inherit;font-size:1.05rem;padding:11px 12px;border:1px solid #7f8a8d;border-radius:var(--radius);background:#fff;color:var(--inkt)}
+.datum{display:flex;gap:8px;align-items:flex-end}
+.datum div{display:flex;flex-direction:column}
+.datum label{font-size:.85rem;color:var(--inkt-zacht)}
+.datum input{font:inherit;font-size:1.05rem;padding:10px;border:1px solid #7f8a8d;border-radius:var(--radius);width:4.2em;text-align:center}
+.datum input.jaar{width:5.6em}
+.datum input:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
+
+/* Segmented radio's: echte radio-inputs, volledig toetsenbordbedienbaar (pijltjestoetsen) */
+.seg{display:flex;border:1px solid var(--groen-donker);border-radius:var(--radius);overflow:hidden}
+.seg label{flex:1;position:relative;margin:0}
+.seg input{position:absolute;opacity:0;inset:0;margin:0;cursor:pointer}
+.seg .knop{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:44px;padding:6px 4px;color:var(--groen-donker);background:#fff;border-left:1px solid var(--groen-donker);font-size:.95rem;text-align:center;line-height:1.2}
+.seg label:first-child .knop{border-left:0}
+.seg input:checked+.knop{background:var(--groen-donker);color:#fff;font-weight:600}
+.seg input:focus-visible+.knop{outline:3px solid var(--focus);outline-offset:-5px}
+.seg .rente{font-size:.8rem;margin-top:2px}
+.seg.rvp .knop{min-height:58px}
+
+details.info{margin:6px 0 10px;font-size:.93rem;color:var(--inkt-zacht)}
+details.info summary{cursor:pointer;color:var(--groen-donker);display:inline-flex;align-items:center;gap:6px;min-height:28px;list-style:none}
+details.info summary::-webkit-details-marker{display:none}
+details.info summary::before{content:"i"/"";display:inline-grid;place-items:center;width:20px;height:20px;border:1.5px solid currentColor;border-radius:50%;font:italic 700 12px/1 Georgia,serif}
+details.info[open] summary{margin-bottom:4px}
+details.info p,details.info ul{margin:.4rem 0}
+.uitklap[hidden]{display:none}
+.uitklap{border-left:3px solid var(--groen);padding-left:14px;margin:-8px 0 22px}
+
+.melding{border-radius:var(--radius);padding:12px 14px;margin:0 0 18px;font-size:.95rem}
+.melding.fout{background:var(--fout-vlak);border-left:4px solid var(--fout);color:#5c120d}
+.melding.let-op{background:var(--let-op-vlak);border-left:4px solid #c98a00;color:#4a2e00}
+.melding.info{background:var(--groen-licht);border-left:4px solid var(--groen-donker)}
+.melding button{margin-top:8px}
+.veldfout{color:var(--fout);font-size:.9rem;margin:6px 0 0}
+.verplicht-uitleg{font-size:.9rem;color:var(--inkt-zacht);margin:0}
+
+/* ---------- Kostenoverzicht ---------- */
+.overzicht{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,240px);gap:16px 22px;align-items:start}
+.posten{margin:0}
+.posten div{display:flex;justify-content:space-between;gap:12px;border-bottom:1px solid var(--lijn);padding:8px 0}
+.posten dt{color:var(--inkt)}
+.posten dd{margin:0;color:var(--groen-donker);font-variant-numeric:tabular-nums;white-space:nowrap;font-weight:600}
+.posten dl{margin:0}
+.posten .subkop{font-weight:700;text-transform:uppercase;font-size:.82rem;letter-spacing:.04em;color:var(--inkt-zacht);margin:16px 0 0;padding:8px 0 0}
+.posten .subkop:first-child{margin-top:0}
+.totalen{display:flex;flex-direction:column;gap:12px}
+.blok{border:1px solid var(--lijn);border-radius:var(--radius);padding:12px 14px;text-align:right}
+.blok .l{display:block;font-size:.95rem}
+.blok .w{display:block;font-weight:700;color:var(--groen-donker);font-variant-numeric:tabular-nums;font-size:1.05rem}
+.blok.groen{background:var(--groen);border-color:var(--groen);color:#062a1d;text-align:left}
+.blok.groen div{display:flex;justify-content:space-between;gap:8px;font-weight:700;padding:3px 0}
+.blok.fin{background:#5d6669;border-color:#5d6669;color:#fff;display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;font-size:1.1rem;text-align:left}
+.blok.haalbaar{background:var(--donker-blok);border-color:var(--donker-blok);color:#fff}
+.blok.haalbaar .w{color:#fff;font-size:1.35rem}
+.blok.haalbaar.ok{border-left:8px solid var(--groen)}
+.blok.haalbaar.nok{border-left:8px solid #ff8a80}
+.blok .status{display:block;font-size:.9rem;margin-top:4px;font-weight:600}
+
+/* ---------- AFM-tabel ---------- */
+.afm{margin-top:28px;border:1px solid var(--lijn);border-radius:var(--radius);overflow:hidden}
+.afm dl{display:grid;grid-template-columns:repeat(6,1fr);margin:0}
+.afm dl div{display:flex;flex-direction:column;border-left:1px solid var(--lijn)}
+.afm dl div:first-child{border-left:0}
+.afm dt{background:var(--vlak);padding:12px;font-size:.92rem;flex:1}
+.afm dd{margin:0;padding:12px;font-variant-numeric:tabular-nums;font-weight:600}
+.afm ul{margin:0;padding:14px 18px 14px 34px;font-size:.85rem;color:var(--inkt-zacht);border-top:1px solid var(--lijn)}
+.afm li{margin:0 0 4px}
+
+/* ---------- Knoppen ---------- */
+.knoppen{display:flex;justify-content:space-between;gap:16px;margin-top:32px;flex-wrap:wrap}
+.btn{display:inline-flex;align-items:center;justify-content:center;min-width:165px;min-height:46px;padding:10px 22px;border:2px solid var(--groen);border-radius:var(--radius);background:var(--groen);color:#062a1d;font:inherit;font-weight:600;cursor:pointer;text-decoration:none}
+.btn:hover{background:#00c088;border-color:#00c088}
+.btn.sec{background:#fff;color:var(--groen-donker);border-color:var(--groen-donker)}
+.btn.sec:hover{background:var(--groen-licht)}
+.btn.klein{min-width:0;min-height:36px;padding:4px 12px;font-size:.9rem}
+
+/* ---------- Stap 4 ---------- */
+.resultaat{display:flex;flex-direction:column;align-items:center;text-align:center}
+.cirkel{width:min(450px,86vw);aspect-ratio:1;border:1px solid #bbb;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden;position:relative}
+.cirkel .logo{width:50%;margin-top:-26%}
+.cirkel .banden{position:absolute;left:12%;right:12%;bottom:17%}
+.cirkel .banden div{padding:5px 8px;color:#fff;font-size:clamp(.85rem,3.4vw,1rem)}
+.cirkel .banden div:first-child{background:#6f6f6f;clip-path:polygon(0 0,100% 0,96% 100%,4% 100%)}
+.cirkel .banden div:last-child{background:#3d3d3d;clip-path:polygon(4% 0,96% 0,89% 100%,11% 100%)}
+.resultaat .knoppen{justify-content:center}
+.footer{padding:24px 0 32px;text-align:center}
+.footer img{height:70px;width:auto}
+.footer-tekst{margin:0 0 6px;font-size:.85rem;color:var(--inkt-zacht)}
+.tarief-stempel{font-size:.82rem;color:var(--inkt-zacht);text-align:center;margin:18px 0 0}
+
+/* ---------- Dialoog ---------- */
+dialog{border:0;border-radius:10px;padding:24px;max-width:420px;width:calc(100% - 32px);text-align:center}
+dialog::backdrop{background:rgba(0,0,0,.45)}
+
+/* ---------- Responsief ---------- */
+@media (max-width:900px){
+  .grid{grid-template-columns:minmax(0,1fr)}
+  .overzicht{grid-template-columns:minmax(0,1fr)}
+  .afm dl{grid-template-columns:1fr 1fr}
+  .afm dl div{border-left:0;border-top:1px solid var(--lijn)}
+  .afm dl div:nth-child(-n+2){border-top:0}
+  .afm dl div:nth-child(even){border-left:1px solid var(--lijn)}
+}
+@media (max-width:640px){
+  h1{font-size:1.3rem}
+  .kaarten{grid-template-columns:1fr 1fr;gap:16px}
+  .kaarten svg{width:88px;height:88px}
+  .stappen .txt{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap}
+  .stap-teller{display:block}
+  .voortgang .wrap{padding-top:10px;padding-bottom:10px}
+  .stappen li{padding-top:0;height:44px}
+  .stappen li::before{top:20px}
+  .stappen .stip{top:15px}
+  .stappen button{height:44px}
+  .knoppen{flex-direction:column-reverse}
+  .knoppen .btn{width:100%}
+  .paneel{padding:16px}
+  .seg .knop{font-size:.9rem}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important;scroll-behavior:auto!important}}
+@media print{.voortgang,.knoppen,.skip,.footer{display:none}}
+</style>
+</head>
+<body>
+<a class="skip" href="#inhoud">Direct naar de inhoud</a>
+
+<header class="voortgang" id="voortgangBalk" hidden>
+  <div class="wrap">
+    <button type="button" class="pijl" id="pijlTerug" aria-label="Vorige stap">
+      <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M10.5 2 4.5 8l6 6" fill="none" stroke="currentColor" stroke-width="2.4"/></svg>
+    </button>
+    <nav aria-label="Voortgang" style="flex:1">
+      <ol class="stappen" id="stappenLijst"></ol>
+    </nav>
+    <button type="button" class="pijl" id="pijlVerder" aria-label="Volgende stap">
+      <svg viewBox="0 0 16 16" aria-hidden="true"><path d="m5.5 2 6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.4"/></svg>
+    </button>
+  </div>
+</header>
+
+<div id="srStatus" class="sr-only" role="status" aria-live="polite" aria-atomic="true"></div>
+<main id="inhoud" tabindex="-1">
+<div class="wrap">
+
+<!-- ================= START ================= -->
+<section class="stap" data-stap="0" aria-labelledby="h0">
+  <h1 id="h0" tabindex="-1" style="text-align:center">Aanvraagstraat</h1>
+  <ul class="kaarten">
+    <li><svg viewBox="0 0 120 120" aria-hidden="true" focusable="false"><circle cx="60" cy="60" r="60" fill="#00d796"/><g fill="none" stroke="#fff" stroke-width="4" stroke-linejoin="round"><path d="M40 30h40v60H40z" fill="#00d796"/><path d="M36 34h40v60H36z" fill="#00d796"/><rect x="43" y="44" width="9" height="9"/><rect x="43" y="61" width="9" height="9"/><rect x="43" y="78" width="9" height="9"/><path d="M58 48h12M58 65h12M58 82h12"/><path d="M44 64l4 4 8-10" stroke-linecap="round"/></g></svg><strong>Start</strong><span>Start de voorbeeld aanvraag</span></li>
+    <li><svg viewBox="0 0 120 120" aria-hidden="true" focusable="false"><circle cx="60" cy="60" r="60" fill="#00d796"/><g fill="#fff"><path d="M34 36h20v6a5 5 0 1 0 10 0v-6h20v20h-6a5 5 0 1 0 0 10h6v20H64v-6a5 5 0 1 0-10 0v6H34V66h6a5 5 0 1 0 0-10h-6z" transform="rotate(-12 60 60)"/></g><g stroke="#00d796" stroke-width="3"><path d="M60 30v62M30 60h62" transform="rotate(-12 60 60)"/></g></svg><strong>Mijn totale kosten</strong><span>Bereken de kosten</span></li>
+    <li><svg viewBox="0 0 120 120" aria-hidden="true" focusable="false"><circle cx="60" cy="60" r="60" fill="#00d796"/><g fill="#fff"><rect x="38" y="28" width="44" height="64" rx="5"/></g><g fill="#00d796"><rect x="44" y="34" width="32" height="14" rx="2"/><circle cx="48" cy="58" r="3.5"/><circle cx="60" cy="58" r="3.5"/><circle cx="72" cy="58" r="3.5"/><circle cx="48" cy="69" r="3.5"/><circle cx="60" cy="69" r="3.5"/><circle cx="72" cy="69" r="3.5"/><circle cx="48" cy="80" r="3.5"/><circle cx="60" cy="80" r="3.5"/><circle cx="72" cy="80" r="3.5"/></g><text x="60" y="45" font-size="11" font-weight="700" text-anchor="middle" fill="#fff" font-family="Arial">€ ?</text></svg><strong>Kan ik dit bedrag lenen?</strong><span>Kunt u dit bedrag lenen?</span></li>
+    <li><svg viewBox="0 0 120 120" aria-hidden="true" focusable="false"><circle cx="60" cy="60" r="60" fill="#00d796"/><path d="M34 60 60 36l26 24M41 54v32h14V70h10v16h14V54M74 42v-6h6v12" fill="none" stroke="#fff" stroke-width="5" stroke-linejoin="round" stroke-linecap="round"/></svg><strong>Mijn overzicht</strong><span>Uw overzicht en voorbeeld renteaanbod</span></li>
+  </ul>
+  <div class="intro">
+    <button type="button" class="btn" data-ga="1">Start</button>
+    <p style="margin-top:24px">Wij proberen de zaken hiermee zo simpel mogelijk te maken. Maar hypotheken zijn natuurlijk toch een beetje ingewikkeld. Het gaat over veel geld en een langjarige verplichting. Daarom adviseren wij om u bij het afsluiten van een hypotheek te laten bijstaan door een onafhankelijke adviseur.</p>
+  </div>
+</section>
+
+<!-- ================= STAP 1 ================= -->
+<section class="stap" data-stap="1" aria-labelledby="h1" hidden>
+  <p class="stap-teller">Stap 1 van 4</p>
+  <h1 id="h1" tabindex="-1">Vul de vraagprijs in van de woning</h1>
+  <form class="paneel" style="max-width:560px" novalidate onsubmit="return false">
+    <div class="veld">
+      <label for="vraagprijs">Vraagprijs <span class="verplicht" aria-hidden="true">*</span></label>
+      <details class="info"><summary>Uitleg vraagprijs</summary>
+        <p>Hier tonen we de vraagprijs van de woning. Als de vraagprijs bekend is, wordt deze automatisch getoond en kunt u deze eventueel aanpassen (b.v. bij een lager of hoger bod).</p>
+        <p>Wilt u weten wat uw maandlasten worden bij een specifiek leenbedrag? Vul dan het gewenste bedrag in.</p>
+      </details>
+      <div class="euro" id="vraagprijsWrap"><span aria-hidden="true">€</span><input id="vraagprijs" class="bedrag" inputmode="numeric" autocomplete="off" required aria-required="true"></div>
+      <p class="veldfout" id="vraagprijsFout" hidden>Vul de vraagprijs van de woning in.</p>
+    </div>
+    <p class="verplicht-uitleg"><span class="verplicht" aria-hidden="true">*</span> verplicht veld</p>
+  </form>
+  <div class="knoppen">
+    <button type="button" class="btn sec" data-ga="0">Terug</button>
+    <button type="button" class="btn" data-ga="2">Verder</button>
+  </div>
+</section>
+
+<!-- ================= STAP 2 ================= -->
+<section class="stap" data-stap="2" aria-labelledby="h2s" hidden>
+  <p class="stap-teller">Stap 2 van 4</p>
+  <h1 id="h2s" tabindex="-1">Mijn totale kosten</h1>
+  <div class="grid">
+    <form class="paneel" novalidate onsubmit="return false">
+      <div class="veld">
+        <label for="hoofdsom">Wat is de gewenste hoofdsom? <span class="verplicht" aria-hidden="true">*</span></label>
+        <div class="euro" id="hoofdsomWrap"><span aria-hidden="true">€</span><input id="hoofdsom" class="bedrag" inputmode="numeric" autocomplete="off" required aria-required="true"></div>
+      </div>
+
+      <fieldset>
+        <legend class="vraag">Gaat u verbouwen?</legend>
+        <details class="info"><summary>Uitleg verbouwen</summary><p>Als u gaat verbouwen kunt u in sommige gevallen een deel van de verbouwingskosten mee laten financieren in de hypotheek.</p></details>
+        <div class="seg">
+          <label><input type="radio" name="verbouwen" value="ja" aria-label="Ja"><span class="knop" aria-hidden="true">Ja</span></label>
+          <label><input type="radio" name="verbouwen" value="nee" checked aria-label="Nee"><span class="knop" aria-hidden="true">Nee</span></label>
+        </div>
+      </fieldset>
+      <div class="uitklap" id="verbouwenUit" hidden>
+        <div class="veld">
+          <label for="verbouwKosten">Hoeveel denkt u dat het gaat kosten?</label>
+          <div class="euro"><span aria-hidden="true">€</span><input id="verbouwKosten" class="bedrag" inputmode="numeric" autocomplete="off"></div>
+        </div>
+        <div class="veld">
+          <label for="waardeNa">Wat is de waarde van de woning na het uitvoeren van de verbouwing?</label>
+          <p style="margin:0 0 6px;font-size:.88rem;color:var(--inkt-zacht)" id="waardeNaHint">Wij vullen voor: huidige waarde + 70% van de verbouwingskosten. U kunt dit aanpassen.</p>
+          <div class="euro"><span aria-hidden="true">€</span><input id="waardeNa" class="bedrag" inputmode="numeric" autocomplete="off" aria-describedby="waardeNaHint"></div>
+        </div>
+      </div>
+
+      <fieldset>
+        <legend class="vraag">Wilt u eigen geld gebruiken?</legend>
+        <details class="info"><summary>Uitleg eigen geld</summary>
+          <p>U kunt tot maximaal 100% van de waarde van de woning lenen. Dit betekent dat u bij een vraagprijs van € 100.000,- maximaal € 100.000,- mag lenen. Dit is inclusief de kosten die verbonden zijn aan de aankoop van de woning.</p>
+          <p>U kunt het tekort aanvullen met eigen geld. Ook kunt u een deel van de woning met eigen middelen betalen. Dit kan invloed op de hoogte van de rente die u moet betalen.</p>
+        </details>
+        <div class="seg">
+          <label><input type="radio" name="eigengeld" value="ja" aria-label="Ja"><span class="knop" aria-hidden="true">Ja</span></label>
+          <label><input type="radio" name="eigengeld" value="nee" checked aria-label="Nee"><span class="knop" aria-hidden="true">Nee</span></label>
+        </div>
+      </fieldset>
+      <div class="uitklap" id="eigengeldUit" hidden>
+        <div class="veld">
+          <label for="eigenGeld">Hoeveel eigen geld wilt u inleggen?</label>
+          <div class="euro"><span aria-hidden="true">€</span><input id="eigenGeld" class="bedrag" inputmode="numeric" autocomplete="off"></div>
+        </div>
+      </div>
+
+      <div id="meldingenStap2"></div>
+
+      <div class="veld">
+        <label for="energielabel">Wat is het energielabel van de woning?</label>
+        <select id="energielabel">
+          <option value="EPG">A++++ (met energieprestatiegarantie)</option>
+          <option value="A++++">A++++</option><option value="A+++">A+++</option><option value="A++">A++</option><option value="A+">A+</option>
+          <option value="A">A</option><option value="B">B</option><option value="C">C</option><option value="D">D</option>
+          <option value="E" selected>E</option><option value="F">F</option><option value="G">G</option>
+        </select>
+      </div>
+
+      <fieldset id="nhgVeld">
+        <legend class="vraag">Nationale Hypotheek Garantie?</legend>
+        <details class="info"><summary>Uitleg NHG</summary>
+          <p>Met de Nationale Hypotheek Garantie (NHG) bent u zeker van een verantwoorde en betaalbare hypotheek.</p>
+          <p>Veranderingen in uw persoonlijke omstandigheden kunnen van invloed zijn op uw financiële situatie. Zo kunt u, als u gaat scheiden, arbeidsongeschikt of werkloos raakt, misschien uw hypotheek niet meer betalen. Heeft u een hypotheek met NHG, dan heeft u in deze vervelende periode een vangnet waarop u kunt vertrouwen.</p>
+          <p>Voor een hypotheek met NHG gelden een aantal voorwaarden. De huidige kostengrens is <span class="nhgGrens"></span>. Dit is het maximale bedrag dat u met NHG kunt lenen om de woning te financieren. Dit bedrag is inclusief bijkomende kosten, zoals notariskosten, borgtochtprovisie en overdrachtsbelasting.</p>
+        </details>
+        <div class="seg">
+          <label><input type="radio" name="nhg" value="ja" aria-label="Ja"><span class="knop" aria-hidden="true">Ja</span></label>
+          <label><input type="radio" name="nhg" value="nee" checked aria-label="Nee"><span class="knop" aria-hidden="true">Nee</span></label>
+        </div>
+      </fieldset>
+      <p class="melding info" id="nhgNiet" hidden>NHG is niet mogelijk: de hoofdsom of de woningwaarde ligt boven de kostengrens van <span class="nhgGrens"></span>.</p>
+      <p class="verplicht-uitleg"><span class="verplicht" aria-hidden="true">*</span> verplicht veld</p>
+    </form>
+
+    <div class="kostenkolom" data-overzicht></div>
+  </div>
+  <div class="knoppen">
+    <button type="button" class="btn sec" data-ga="1">Terug</button>
+    <button type="button" class="btn" data-ga="3">Verder</button>
+  </div>
+</section>
+
+<!-- ================= STAP 3 ================= -->
+<section class="stap" data-stap="3" aria-labelledby="h3s" hidden>
+  <p class="stap-teller">Stap 3 van 4</p>
+  <h1 id="h3s" tabindex="-1">Kan ik dit bedrag lenen?</h1>
+  <div class="grid">
+    <form class="paneel" novalidate onsubmit="return false">
+      <fieldset>
+        <legend class="vraag">Wat is uw geboortedatum? <span class="verplicht" aria-hidden="true">*</span></legend>
+        <details class="info"><summary>Let op bij (bijna) pensioen</summary>
+          <p>Ontvangt u nu AOW/pensioen of gaat u binnen 10,5 jaar na de datum van het moment van aanvragen met pensioen? En wilt u verhuizen van de ene koopwoning naar de andere? Dan kunt u misschien meer lenen dan hier wordt getoond. Vraag uw adviseur naar de specifieke voorwaarden.</p>
+        </details>
+        <div class="datum" id="datumWrap">
+          <div><label for="gebDag">Dag</label><input id="gebDag" aria-required="true" inputmode="numeric" maxlength="2" autocomplete="bday-day" placeholder="DD"></div>
+          <div><label for="gebMaand">Maand</label><input id="gebMaand" aria-required="true" inputmode="numeric" maxlength="2" autocomplete="bday-month" placeholder="MM"></div>
+          <div><label for="gebJaar">Jaar</label><input id="gebJaar" class="jaar" aria-required="true" inputmode="numeric" maxlength="4" autocomplete="bday-year" placeholder="JJJJ"></div>
+        </div>
+        <p class="veldfout" id="datumFout" hidden>Vul een geldige geboortedatum in (bijvoorbeeld 01 03 1990).</p>
+      </fieldset>
+
+      <div class="veld">
+        <label for="inkomen">Wat is uw bruto jaarinkomen? <span class="verplicht" aria-hidden="true">*</span></label>
+        <details class="info"><summary>Inkomen als ondernemer of DGA</summary>
+          <p>Als u IB-ondernemer of Directeur Groot Aandeelhouder bent, gelden er andere regels voor uw inkomen. Bereken uw bruto jaarinkomen met de volgende uitgangspunten:</p>
+          <p>Als u meer dan 3 jaar IB-ondernemer bent, neemt u de gemiddelde nettowinst over de afgelopen 3 jaar met als maximum uw winst van het laatste jaar.</p>
+          <p>Ondernemers voor de inkomstenbelasting en directeur-grootaandeelhouders hebben een Inkomensverklaring voor ondernemers (IKV) nodig. De IKV geeft een financieel overzicht van de onderneming en de toegepaste correcties met als uitkomst het ondernemersinkomen. Dit inkomen neemt MUNT volledig mee in het toetsinkomen.</p>
+          <p>De IKV moet opgemaakt zijn door een rekenexpert die door MUNT is geautoriseerd (zie <a href="https://www.munthypotheken.nl/inkomensverklaring" target="_blank" rel="noopener">munthypotheken.nl/inkomensverklaring<span class="sr-only"> (opent in nieuw venster)</span></a>) en mag op de datum van het hypotheekaanbod niet ouder zijn dan 6 maanden. De expert deelt u of uw klant mee welke documenten nodig zijn om het ondernemersinkomen te berekenen.</p>
+        </details>
+        <div class="euro" id="inkomenWrap"><span aria-hidden="true">€</span><input id="inkomen" class="bedrag" inputmode="numeric" autocomplete="off" required aria-required="true"></div>
+        <p class="veldfout" id="inkomenFout" hidden>Vul uw bruto jaarinkomen in.</p>
+      </div>
+
+      <fieldset>
+        <legend class="vraag">Heeft u een partner?</legend>
+        <div class="seg">
+          <label><input type="radio" name="partner" value="ja" aria-label="Ja"><span class="knop" aria-hidden="true">Ja</span></label>
+          <label><input type="radio" name="partner" value="nee" checked aria-label="Nee"><span class="knop" aria-hidden="true">Nee</span></label>
+        </div>
+      </fieldset>
+      <div class="uitklap" id="partnerUit" hidden>
+        <div class="veld">
+          <label for="partnerInkomen">Wat is het bruto jaarinkomen van uw partner?</label>
+          <div class="euro"><span aria-hidden="true">€</span><input id="partnerInkomen" class="bedrag" inputmode="numeric" autocomplete="off"></div>
+        </div>
+      </div>
+
+      <fieldset>
+        <legend class="vraag">Voor welke rentevastperiode wilt u een renteaanbod?</legend>
+        <details class="info"><summary>Uitleg rentevaste periode</summary>
+          <p>Wanneer u een hypotheek afsluit is de looptijd meestal 30 jaar. Binnen die 30 jaar maakt u een afspraak over de rente die u gaat betalen en voor welke periode. De looptijd van 30 jaar kan opgeknipt worden in meerdere “rentevaste periodes”.</p>
+          <p>De duur van de rentevaste periode heeft invloed op de hoogte van de rente. In het algemeen geldt: hoe langer die periode, hoe hoger de rente. MUNT hanteert rentevaste periodes van 5, 10, 20 en 30 jaar.</p>
+          <p>Als een rentevaste periode afloopt binnen de 30 jaar van de hypotheek, dan moet u een nieuwe “renteafspraak” maken met de dan geldende rentetarieven.</p>
+        </details>
+        <div class="seg rvp" id="rvpKeuze"></div>
+      </fieldset>
+
+      <fieldset>
+        <legend class="vraag">Heeft u schulden of leningen?</legend>
+        <div class="seg">
+          <label><input type="radio" name="schulden" value="ja" aria-label="Ja"><span class="knop" aria-hidden="true">Ja</span></label>
+          <label><input type="radio" name="schulden" value="nee" checked aria-label="Nee"><span class="knop" aria-hidden="true">Nee</span></label>
+        </div>
+      </fieldset>
+      <div class="uitklap" id="schuldenUit" hidden>
+        <div class="veld">
+          <label for="krediet">Totale som leningen (eventueel inclusief leningen partner)</label>
+          <div class="euro"><span aria-hidden="true">€</span><input id="krediet" class="bedrag" inputmode="numeric" autocomplete="off"></div>
+        </div>
+        <div class="veld">
+          <label for="studie">Totaal maandbedrag studieschuld (eventueel inclusief maandbedrag studieschuld partner)</label>
+          <div class="euro"><span aria-hidden="true">€</span><input id="studie" class="bedrag" inputmode="numeric" autocomplete="off"></div>
+        </div>
+        <div class="veld">
+          <label for="alimentatie">Hoeveel partneralimentatie betaalt u per maand?</label>
+          <div class="euro"><span aria-hidden="true">€</span><input id="alimentatie" class="bedrag" inputmode="numeric" autocomplete="off"></div>
+        </div>
+      </div>
+
+      <fieldset>
+        <legend class="vraag">Is er sprake van erfpacht?</legend>
+        <details class="info"><summary>Uitleg erfpacht</summary>
+          <p>Veel huizen in Nederland staan niet op eigen grond, maar op grond met een erfpacht. Bij aankoop van een woning bezit u de woning maar niet de grond waar de woning op staat. Er zijn in het algemeen drie vormen van erfpacht:</p>
+          <ul>
+            <li><strong>Erfpacht met een periodieke canon</strong> lijkt het meest op een huursituatie. Hierbij betaalt u periodiek (meestal maandelijks of jaarlijks) een bedrag aan de verpachter.</li>
+            <li><strong>Tijdelijke afkoop van de erfpacht:</strong> de erfpacht is voor een vooraf vastgestelde periode afgekocht. Dit gebeurt bijvoorbeeld vaak bij nieuwbouwprojecten.</li>
+            <li><strong>Eeuwigdurende afkoop van de erfpacht:</strong> bij de aankoop wordt eenmalig een bedrag betaald om de erfpacht af te kopen. Dan is er vrijwel geen verschil met een woning op eigen grond (ook niet in verkoopprijs).</li>
+          </ul>
+        </details>
+        <div class="seg">
+          <label><input type="radio" name="erfpacht" value="ja" aria-label="Ja"><span class="knop" aria-hidden="true">Ja</span></label>
+          <label><input type="radio" name="erfpacht" value="nee" checked aria-label="Nee"><span class="knop" aria-hidden="true">Nee</span></label>
+        </div>
+      </fieldset>
+      <div class="uitklap" id="erfpachtUit" hidden>
+        <div class="veld">
+          <label for="canon">Bedrag jaarlijkse canon</label>
+          <div class="euro"><span aria-hidden="true">€</span><input id="canon" class="bedrag" inputmode="numeric" autocomplete="off"></div>
+        </div>
+      </div>
+      <p class="verplicht-uitleg"><span class="verplicht" aria-hidden="true">*</span> verplicht veld</p>
+    </form>
+
+    <div>
+      <div data-overzicht></div>
+      <div class="blok haalbaar" id="haalbaarBlok" style="margin-top:12px">
+        <span class="l">Financieel haalbaar:</span> <span class="w" id="maxHyp">–</span>
+        <span class="status" id="haalbaarStatus"></span>
+        <span id="ebvRegel"><span class="l" style="margin-top:6px">Extra ruimte voor EBV:</span> <span class="w" id="ebv">–</span></span>
+      </div>
+    </div>
+  </div>
+
+  <div id="meldingenStap3" style="margin-top:18px"></div>
+
+  <section class="afm" aria-labelledby="afmKop">
+    <h2 id="afmKop" class="sr-only">Uw maandlast (indicatie)</h2>
+    <dl>
+      <div><dt>Totale lening</dt><dd id="afmLening">–</dd></div>
+      <div><dt>Vaste rente</dt><dd id="afmRente">–</dd></div>
+      <div><dt>Maandelijks bedrag</dt><dd id="afmMaand">–</dd></div>
+      <div><dt>Looptijd van de lening</dt><dd>360 maanden</dd></div>
+      <div><dt>Totaalbedrag</dt><dd id="afmTotaal">–</dd></div>
+      <div><dt>Jaarlijks kostenpercentage</dt><dd id="afmJkp">–</dd></div>
+    </dl>
+    <ul>
+      <li>Dit betreft een annuïteitenhypotheek met een rentevaste periode van <span class="rvpJaar">10</span> jaar waarbij de aanname is gedaan dat de rente gedurende de looptijd van 360 maanden vast staat. MUNT verlaagt de risico-opslag automatisch zodra de schuld door aflossing in een lagere risicoklasse valt; dat is in het totaalbedrag doorgerekend.</li>
+      <li>De getoonde maandlast is de bruto maandlast. Hoogstwaarschijnlijk heeft u recht op hypotheekrenteaftrek. Uw hypotheekadviseur kan voor u de netto maandlasten berekenen.</li>
+      <li>Naast de maandlasten dient u, vanaf 70-jarige leeftijd en als uw hypotheek hoger is dan 80% van de marktwaarde van de woning, een overlijdensrisicoverzekering af te sluiten voor het gedeelte van de hypotheek dat boven de 80% marktwaarde uitkomt. De te betalen premie is NIET in dit overzicht meegenomen. Uw adviseur kan u een passend premievoorstel doen.</li>
+      <li>Notariskosten, taxatiekosten en advieskosten die we gebruiken in deze voorbeeldberekening zijn gemiddelden. De daadwerkelijke kosten kunnen hiervan afwijken. Daarom zijn deze bij de bepaling van het jaarlijks kostenpercentage (JKP) niet meegenomen. Het JKP bestaat uitsluitend uit de effectieve rente die u aan MUNT Hypotheken zou betalen, als u een hypotheek bij ons zou krijgen.</li>
+      <li>De extra ruimte voor EBV is alleen te gebruiken voor één of meer van de goedgekeurde energiebesparende maatregelen. Welke dit zijn, vindt u op <a href="https://www.munthypotheken.nl/duurzaamheid/mijn-woning-verduurzamen/" target="_blank" rel="noopener">munthypotheken.nl/duurzaamheid<span class="sr-only"> (opent in nieuw venster)</span></a>. De maandelijkse lasten voor rente en terugbetaling EBV zijn in de maandlastenberekening niet meegenomen.</li>
+    </ul>
+  </section>
+  <p class="tarief-stempel">Rentetarieven en normen per <span class="tariefDatum"></span>. Aan deze berekening kunt u geen rechten ontlenen.</p>
+  <div class="knoppen">
+    <button type="button" class="btn sec" data-ga="2">Terug</button>
+    <button type="button" class="btn" data-ga="4">Verder</button>
+  </div>
+</section>
+
+<!-- ================= STAP 4 ================= -->
+<section class="stap" data-stap="4" aria-labelledby="h4s" hidden>
+  <p class="stap-teller">Stap 4 van 4</p>
+  <div class="resultaat">
+    <h1 id="h4s" tabindex="-1">Uw hypotheekberekening staat klaar</h1>
+    <div class="cirkel">
+      <svg class="logo" viewBox="0 0 260 230" role="img" aria-label="MUNT Hypotheken"><polygon points="98,10 172,48 172,118 98,82" fill="#00d796"/><polygon points="98,10 98,82 70,98 70,30" fill="#00d796"/><polygon points="70,98 98,82 172,118 140,128" fill="#00d796"/><path d="M98,10 98,82 172,118 M98,82 70,98" fill="none" stroke="#fff" stroke-width="4"/><text x="130" y="190" text-anchor="middle" font-family="Georgia,'Times New Roman',serif" font-weight="700" font-size="66" fill="#111">MUNT</text><text x="130" y="222" text-anchor="middle" font-family="Arial,sans-serif" font-weight="700" font-size="20" letter-spacing="9" fill="#111">HYPOTHEKEN</text></svg>
+      <div class="banden">
+        <div>Hypotheekbedrag: <span id="resBedrag"></span></div>
+        <div>Bruto maandlast: <span id="resMaand"></span></div>
+      </div>
+    </div>
+    <div class="knoppen">
+      <button type="button" class="btn sec" data-ga="3">Terug</button>
+      <button type="button" class="btn" id="downloadRapport">Download rapport</button>
+    </div>
+    <p class="tarief-stempel" id="popupMelding" role="status"></p>
+  </div>
+</section>
+
+<!-- ================= STAP 5 ================= -->
+<section class="stap" data-stap="5" aria-labelledby="h5s" hidden>
+  <h1 id="h5s" tabindex="-1">Hoe nu verder?</h1>
+  <div style="max-width:760px">
+    <p><strong>U heeft zojuist uw persoonlijke hypotheekberekening gedownload.</strong></p>
+    <p>Misschien heeft u vragen over de hypotheekberekening die u zojuist heeft gemaakt of wilt u meteen een hypotheek bij ons aanvragen. Bij MUNT Hypotheken geloven we in de toegevoegde waarde van goed hypotheekadvies. Wij werken daarom samen met veel verschillende, maar altijd onafhankelijke, hypotheekadviseurs in heel Nederland. Daardoor is er altijd wel een hypotheekadviseur die bij u past in de buurt.</p>
+    <p>De juiste adviseur uitkiezen is bij MUNT Hypotheken bijzonder gemakkelijk. U vult in de adviseurszoeker uw postcode in en wij laten u zien welke adviseurs in de buurt u zouden kunnen adviseren bij het afsluiten van een MUNT Hypotheek.</p>
+    <h2>Wilt u in contact komen met een onafhankelijke hypotheekadviseur?</h2>
+    <div class="knoppen" style="justify-content:flex-start">
+      <a class="btn" href="https://www.munthypotheken.nl/vind-een-adviseur/" target="_blank" rel="noopener">Vind een adviseur<span class="sr-only"> (opent in nieuw venster)</span></a>
+      <button type="button" class="btn sec" id="opnieuwRapport">Rapport opnieuw openen</button>
+      <button type="button" class="btn sec" data-ga="4">Terug naar overzicht</button>
+    </div>
+  </div>
+</section>
+
+</div>
+</main>
+
+<footer class="footer">
+  <p class="footer-tekst">Een rekentool van</p>
+  <img src="data:image/png;base64,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" alt="Blinqx Verzekering &amp; Hypotheek" width="207" height="70">
+</footer>
+
+<script>
+"use strict";
+/* =====================================================================
+   CONFIGURATIE — werk deze waarden bij wanneer tarieven/normen wijzigen
+   ===================================================================== */
+const CONFIG = {
+  tariefDatum: "23 november 2026",
+  // MUNT-rentesheet (snapshot munt.hypotheekbond.nl, 23-11-2026)
+  // rentevaste periode (jaar) -> risicoklasse -> rente %
+  // klassen: nhg = met NHG, l60 = t/m 60% LTV, l80 = t/m 80%, l90 = t/m 90%, g90 = boven 90%
+  rentes: {
+    5:  {nhg:4.31, l60:4.33, l80:4.37, l90:4.38, g90:4.40},
+    10: {nhg:4.36, l60:4.43, l80:4.49, l90:4.54, g90:4.56},
+    20: {nhg:4.56, l60:4.56, l80:4.59, l90:4.62, g90:4.68},
+    30: {nhg:4.58, l60:4.59, l80:4.63, l90:4.66, g90:4.75}
+  },
+  standaardRvp: 10,
+  looptijd: 360,
+  overdrachtsbelasting: 0.02,       // eigen woning
+  notarisLevering: 650,
+  notarisHypotheek: 650,
+  taxatie: 500,
+  advies: 2500,
+  nhgKostengrens: 470000,
+  nhgProvisie: 0.004,               // 0,4% van de hoofdsom
+  waardestijgingVerbouwing: 0.7,    // voorstel waarde na verbouwing
+  maxLtv: 1.00,
+  toetsrenteKort: 5.0,              // AFM-toetsrente bij rentevaste periode < 10 jaar
+  alleenstaandeBonus: 17000,        // extra leenruimte alleenstaande (vanaf eerste tabelrij)
+  kredietFactor: 0.02,              // 2% van de kredietsom per maand
+  // Studieschuld: factor per toetsrente-klasse (≤1,5% … >6,5%)
+  studieFactor: [1.05,1.05,1.10,1.15,1.20,1.20,1.25,1.30,1.30,1.35,1.40,1.40],
+  // Extra leenruimte energielabel (bovenop financieringslast)
+  labelBonus: {EPG:40000,"A++++":30000,"A+++":25000,"A++":20000,"A+":20000,A:10000,B:10000,C:5000,D:5000,E:0,F:0,G:0},
+  // Extra ruimte voor energiebesparende voorzieningen (EBV), getoond als indicatie
+  ebv: {EPG:0,"A++++":0,"A+++":0,"A++":10000,"A+":10000,A:10000,B:10000,C:15000,D:15000,E:20000,F:20000,G:20000},
+  // Financieringslastpercentages (Nibud 2026, zoals toegepast door de MUNT-rekentool).
+  // Per toetsrente-klasse: laag = % onder eerste tabelrij, start = eerste tabelrij (bruto toetsinkomen),
+  // flp = % per € 1.000 inkomen vanaf start. Boven de laatste rij geldt de laatste waarde.
+  flp: {"normaal":[{"laag":15.5,"start":31000,"flp":[16.2,16.7,17.1,17.3,17.4,17.4,17.4,17.4,17.4,17.4,17.4,17.4,17.4,17.4,17.4,17.4,17.4,17.4,17.4,17.4,17.4,17.4,17.4,17.4,17.4,17.4,17.5,17.6,17.6,17.7,17.7,17.8,17.8,17.9,18.0,18.1,18.2,18.3,18.5,18.6,18.8,19.0,19.1,19.3,19.4,19.5,19.6,19.7,19.8,19.9,20.0,20.1,20.1,20.2,20.2,20.2,20.3,20.4,20.5,20.5,20.5,20.6,20.7,20.8,20.8,20.9,21.0,21.0,21.1,21.1,21.2,21.2,21.3,21.3,21.3,21.4,21.4,21.5,21.5,21.6,21.6,21.7,21.7,21.8,21.8,21.8,21.9,21.9,22.0,22.0,22.0,22.1,22.1,22.2,22.2,22.2,22.2,22.2,22.2,22.2]},{"laag":16.5,"start":31000,"flp":[17.3,17.9,18.3,18.5,18.5,18.5,18.5,18.5,18.5,18.5,18.5,18.5,18.5,18.5,18.5,18.5,18.5,18.5,18.5,18.5,18.5,18.5,18.5,18.5,18.5,18.5,18.5,18.6,18.6,18.7,18.7,18.8,18.9,18.9,19.0,19.1,19.2,19.4,19.5,19.7,19.9,20.0,20.2,20.4,20.5,20.6,20.8,20.9,20.9,21.0,21.1,21.2,21.2,21.3,21.3,21.4,21.4,21.5,21.5,21.6,21.6,21.7,21.7,21.8,21.9,21.9,22.0,22.1,22.1,22.2,22.2,22.3,22.4,22.4,22.5,22.5,22.5,22.6,22.6,22.7,22.7,22.8,22.8,22.9,22.9,22.9,23.0,23.0,23.1,23.1,23.2,23.2,23.2,23.3,23.3,23.3,23.3,23.3,23.3,23.3]},{"laag":17.5,"start":31000,"flp":[18.3,19.0,19.5,19.6,19.6,19.6,19.6,19.6,19.6,19.6,19.6,19.6,19.6,19.6,19.6,19.6,19.6,19.6,19.6,19.6,19.6,19.6,19.6,19.6,19.6,19.6,19.6,19.6,19.6,19.7,19.7,19.8,19.9,19.9,20.0,20.1,20.2,20.4,20.5,20.7,20.9,21.1,21.3,21.5,21.6,21.7,21.9,22.0,22.1,22.2,22.2,22.3,22.3,22.4,22.4,22.5,22.5,22.5,22.6,22.6,22.7,22.7,22.8,22.8,22.9,23.0,23.0,23.1,23.2,23.2,23.3,23.4,23.4,23.5,23.5,23.6,23.7,23.7,23.7,23.7,23.8,23.8,23.9,23.9,24.0,24.0,24.1,24.1,24.1,24.2,24.2,24.3,24.3,24.4,24.4,24.4,24.4,24.4,24.4,24.4]},{"laag":18.4,"start":31000,"flp":[19.3,20.1,20.6,20.6,20.6,20.6,20.6,20.6,20.6,20.6,20.6,20.6,20.6,20.6,20.6,20.6,20.6,20.6,20.6,20.6,20.6,20.6,20.6,20.6,20.6,20.6,20.6,20.6,20.6,20.7,20.7,20.7,20.9,21.0,21.0,21.1,21.2,21.4,21.5,21.7,21.9,22.1,22.3,22.5,22.6,22.8,22.9,23.1,23.2,23.2,23.3,23.4,23.4,23.4,23.5,23.5,23.6,23.6,23.7,23.7,23.7,23.8,23.8,23.9,23.9,24.0,24.0,24.1,24.2,24.2,24.3,24.4,24.4,24.5,24.5,24.6,24.7,24.7,24.8,24.8,24.8,24.9,24.9,25.0,25.0,25.0,25.1,25.1,25.2,25.2,25.3,25.3,25.4,25.4,25.5,25.5,25.5,25.5,25.5,25.5]},{"laag":19.3,"start":31000,"flp":[20.2,21.1,21.6,21.6,21.6,21.6,21.6,21.6,21.6,21.6,21.6,21.6,21.6,21.6,21.6,21.6,21.6,21.6,21.6,21.6,21.6,21.6,21.6,21.6,21.6,21.6,21.6,21.6,21.6,21.6,21.7,21.7,21.8,21.9,22.0,22.1,22.2,22.3,22.5,22.7,22.9,23.1,23.3,23.5,23.7,23.8,24.0,24.1,24.2,24.3,24.3,24.4,24.4,24.5,24.5,24.6,24.6,24.6,24.7,24.7,24.8,24.8,24.8,24.9,25.0,25.0,25.0,25.1,25.1,25.2,25.3,25.3,25.4,25.5,25.5,25.6,25.6,25.7,25.8,25.8,25.9,25.9,25.9,25.9,26.0,26.0,26.1,26.1,26.2,26.2,26.3,26.3,26.4,26.4,26.5,26.5,26.5,26.5,26.5,26.5]},{"laag":20.1,"start":31000,"flp":[21.2,22.1,22.6,22.6,22.6,22.6,22.6,22.6,22.6,22.6,22.6,22.6,22.6,22.6,22.6,22.6,22.6,22.6,22.6,22.6,22.6,22.6,22.6,22.6,22.6,22.6,22.6,22.6,22.6,22.6,22.6,22.7,22.7,22.8,22.9,23.0,23.1,23.2,23.4,23.6,23.8,24.1,24.3,24.5,24.6,24.8,24.9,25.1,25.2,25.3,25.4,25.4,25.4,25.5,25.5,25.6,25.6,25.6,25.7,25.7,25.8,25.8,25.8,25.9,25.9,26.0,26.0,26.1,26.1,26.1,26.2,26.3,26.3,26.4,26.5,26.5,26.6,26.7,26.7,26.7,26.8,26.8,26.9,26.9,26.9,27.0,27.0,27.1,27.1,27.2,27.2,27.3,27.3,27.4,27.4,27.4,27.4,27.4,27.4,27.4]},{"laag":20.9,"start":31000,"flp":[22.0,23.0,23.6,23.6,23.6,23.6,23.6,23.6,23.6,23.6,23.6,23.6,23.6,23.6,23.6,23.6,23.6,23.6,23.6,23.6,23.6,23.6,23.6,23.6,23.6,23.6,23.6,23.6,23.6,23.6,23.6,23.6,23.7,23.7,23.8,23.9,24.0,24.1,24.3,24.5,24.7,25.0,25.2,25.4,25.6,25.7,25.9,26.1,26.2,26.3,26.4,26.4,26.4,26.5,26.5,26.5,26.6,26.6,26.6,26.7,26.7,26.8,26.8,26.9,26.9,26.9,27.0,27.0,27.1,27.1,27.1,27.1,27.2,27.3,27.3,27.4,27.5,27.5,27.6,27.7,27.7,27.7,27.8,27.8,27.9,27.9,28.0,28.0,28.0,28.1,28.1,28.2,28.2,28.3,28.3,28.3,28.3,28.3,28.3,28.3]},{"laag":21.6,"start":31000,"flp":[22.7,23.8,24.6,24.6,24.6,24.6,24.6,24.6,24.6,24.6,24.6,24.6,24.6,24.6,24.6,24.6,24.6,24.6,24.6,24.6,24.6,24.6,24.6,24.6,24.6,24.6,24.6,24.6,24.6,24.6,24.6,24.6,24.6,24.6,24.7,24.7,24.8,25.0,25.1,25.3,25.6,25.8,26.0,26.3,26.4,26.6,26.8,27.0,27.1,27.2,27.3,27.3,27.4,27.4,27.4,27.4,27.5,27.5,27.6,27.6,27.6,27.7,27.7,27.8,27.8,27.9,27.9,27.9,28.0,28.0,28.0,28.1,28.1,28.1,28.2,28.2,28.3,28.4,28.4,28.5,28.5,28.6,28.7,28.7,28.7,28.8,28.8,28.9,28.9,28.9,29.0,29.0,29.1,29.1,29.2,29.2,29.2,29.2,29.2,29.2]},{"laag":22.2,"start":31000,"flp":[23.4,24.6,25.4,25.5,25.5,25.5,25.5,25.5,25.5,25.5,25.5,25.5,25.5,25.5,25.5,25.5,25.5,25.5,25.5,25.5,25.5,25.5,25.5,25.5,25.5,25.5,25.5,25.5,25.5,25.5,25.5,25.5,25.5,25.5,25.5,25.6,25.7,25.8,26.0,26.2,26.4,26.6,26.9,27.1,27.3,27.5,27.6,27.8,27.9,28.1,28.1,28.2,28.2,28.3,28.3,28.4,28.4,28.4,28.4,28.5,28.5,28.6,28.6,28.6,28.7,28.7,28.8,28.8,28.8,28.9,28.9,28.9,29.0,29.0,29.1,29.1,29.1,29.2,29.2,29.3,29.3,29.4,29.4,29.5,29.5,29.6,29.6,29.7,29.7,29.8,29.8,29.9,29.9,29.9,30.0,30.0,30.0,30.0,30.0,30.0]},{"laag":22.7,"start":31000,"flp":[24.1,25.3,26.1,26.4,26.4,26.4,26.4,26.4,26.4,26.4,26.4,26.4,26.4,26.4,26.4,26.4,26.4,26.4,26.4,26.4,26.4,26.4,26.4,26.4,26.4,26.4,26.4,26.4,26.4,26.4,26.4,26.4,26.4,26.4,26.4,26.4,26.5,26.7,26.8,27.0,27.2,27.4,27.6,27.9,28.1,28.2,28.4,28.6,28.7,28.9,29.0,29.0,29.1,29.1,29.2,29.2,29.2,29.3,29.3,29.3,29.3,29.4,29.4,29.5,29.5,29.5,29.6,29.6,29.6,29.7,29.7,29.8,29.8,29.8,29.9,29.9,30.0,30.0,30.0,30.0,30.1,30.1,30.2,30.2,30.3,30.3,30.4,30.4,30.5,30.5,30.6,30.6,30.7,30.8,30.8,30.8,30.8,30.8,30.8,30.8]},{"laag":23.2,"start":31000,"flp":[24.6,25.9,26.8,27.3,27.3,27.3,27.3,27.3,27.3,27.3,27.3,27.3,27.3,27.3,27.3,27.3,27.3,27.3,27.3,27.3,27.3,27.3,27.3,27.3,27.3,27.3,27.3,27.3,27.3,27.3,27.3,27.3,27.3,27.3,27.3,27.3,27.3,27.4,27.6,27.8,28.0,28.2,28.4,28.6,28.8,29.0,29.2,29.4,29.5,29.6,29.7,29.8,29.9,29.9,29.9,30.0,30.0,30.1,30.1,30.1,30.2,30.2,30.2,30.2,30.3,30.3,30.4,30.4,30.4,30.5,30.5,30.5,30.6,30.6,30.6,30.7,30.7,30.8,30.8,30.8,30.8,30.9,30.9,30.9,31.0,31.0,31.1,31.1,31.2,31.3,31.3,31.4,31.4,31.5,31.5,31.5,31.5,31.5,31.5,31.5]},{"laag":23.7,"start":31000,"flp":[25.1,26.4,27.4,28.1,28.1,28.1,28.1,28.1,28.1,28.1,28.1,28.1,28.1,28.1,28.1,28.1,28.1,28.1,28.1,28.1,28.1,28.1,28.1,28.1,28.1,28.1,28.1,28.1,28.1,28.1,28.1,28.1,28.1,28.1,28.1,28.1,28.1,28.2,28.3,28.5,28.7,28.9,29.2,29.3,29.5,29.7,29.9,30.1,30.2,30.3,30.4,30.5,30.6,30.6,30.7,30.7,30.8,30.8,30.8,30.9,30.9,31.0,31.0,31.0,31.0,31.0,31.1,31.1,31.2,31.2,31.2,31.3,31.3,31.3,31.4,31.4,31.5,31.5,31.5,31.5,31.6,31.6,31.7,31.7,31.7,31.7,31.8,31.8,31.9,31.9,32.0,32.0,32.1,32.1,32.2,32.2,32.2,32.2,32.2,32.2]}],"aow":[{"laag":18.5,"start":30000,"flp":[19.2,19.9,20.5,20.9,21.2,21.6,21.8,21.9,22.0,22.1,22.2,22.3,22.4,22.5,22.7,22.8,22.9,23.1,23.1,23.3,23.4,23.6,23.9,24.2,24.5,24.8,25.0,25.2,25.3,25.4,25.5,25.6,25.7,25.8,25.8,25.9,25.9,26.0,26.0,26.1,26.2,26.2,26.3,26.4,26.5,26.5,26.6,26.7,26.8,26.9,27.1,27.2,27.2,27.3,27.4,27.5,27.6,27.7,27.7,27.7,27.7,27.8,27.8,27.8,27.8,27.9,27.9,27.9,28.0,28.0,28.0,28.1,28.1,28.1,28.2,28.2,28.2,28.3,28.3,28.3,28.4,28.4,28.4,28.4,28.4,28.4,28.4,28.4,28.4,28.4,28.4,28.4,28.4,28.4,28.4,28.4,28.4,28.4,28.4,28.4,28.4]},{"laag":18.9,"start":30000,"flp":[19.8,20.6,21.2,21.7,22.0,22.4,22.7,22.9,23.1,23.2,23.3,23.4,23.5,23.6,23.7,23.9,24.0,24.1,24.3,24.4,24.6,24.8,25.0,25.4,25.7,26.0,26.4,26.6,26.8,27.0,27.1,27.2,27.3,27.4,27.6,27.6,27.6,27.7,27.7,27.8,27.9,27.9,28.0,28.0,28.1,28.2,28.3,28.3,28.4,28.5,28.5,28.6,28.8,28.8,28.9,29.0,29.1,29.1,29.2,29.2,29.2,29.2,29.3,29.3,29.3,29.3,29.4,29.4,29.4,29.4,29.5,29.5,29.5,29.6,29.6,29.6,29.6,29.7,29.7,29.7,29.8,29.8,29.8,29.8,29.8,29.8,29.8,29.8,29.8,29.8,29.8,29.8,29.8,29.8,29.8,29.8,29.8,29.8,29.8,29.8,29.8]},{"laag":19.4,"start":30000,"flp":[20.3,21.2,21.8,22.3,22.8,23.1,23.5,23.8,24.0,24.2,24.3,24.4,24.5,24.6,24.8,24.9,25.0,25.2,25.3,25.5,25.6,25.8,26.2,26.5,26.8,27.2,27.6,27.9,28.1,28.4,28.6,28.7,28.9,29.0,29.1,29.2,29.4,29.4,29.5,29.5,29.6,29.6,29.7,29.7,29.7,29.8,29.9,30.0,30.0,30.1,30.1,30.2,30.2,30.3,30.4,30.4,30.5,30.6,30.6,30.6,30.6,30.7,30.7,30.7,30.7,30.8,30.8,30.8,30.8,30.9,30.9,30.9,30.9,30.9,31.0,31.0,31.0,31.1,31.1,31.1,31.2,31.2,31.2,31.2,31.2,31.2,31.2,31.2,31.2,31.2,31.2,31.2,31.2,31.2,31.2,31.2,31.2,31.2,31.2,31.2,31.2]},{"laag":19.7,"start":30000,"flp":[20.8,21.7,22.4,22.9,23.4,23.9,24.3,24.6,24.9,25.1,25.2,25.3,25.5,25.6,25.8,25.9,26.0,26.1,26.3,26.5,26.7,26.8,27.2,27.5,27.9,28.3,28.6,29.0,29.4,29.6,29.9,30.1,30.4,30.5,30.7,30.8,30.9,31.0,31.1,31.2,31.3,31.3,31.4,31.4,31.4,31.4,31.5,31.6,31.6,31.7,31.7,31.8,31.9,31.9,31.9,31.9,31.9,32.0,32.0,32.0,32.1,32.1,32.1,32.1,32.1,32.1,32.2,32.2,32.2,32.2,32.3,32.3,32.3,32.3,32.3,32.4,32.4,32.4,32.5,32.5,32.5,32.5,32.5,32.5,32.5,32.5,32.5,32.5,32.5,32.5,32.5,32.5,32.5,32.5,32.5,32.5,32.5,32.5,32.5,32.5,32.5]},{"laag":20.1,"start":30000,"flp":[21.1,22.1,23.0,23.5,24.0,24.5,24.9,25.3,25.7,25.9,26.1,26.3,26.4,26.6,26.7,26.8,26.9,27.1,27.3,27.5,27.6,27.9,28.1,28.5,28.9,29.3,29.7,30.0,30.4,30.8,31.1,31.4,31.6,31.9,32.1,32.3,32.4,32.5,32.6,32.7,32.8,32.9,33.0,33.1,33.1,33.1,33.2,33.2,33.3,33.3,33.3,33.4,33.4,33.4,33.4,33.4,33.4,33.4,33.4,33.4,33.4,33.4,33.4,33.5,33.5,33.5,33.5,33.5,33.6,33.6,33.6,33.6,33.6,33.7,33.7,33.7,33.7,33.7,33.8,33.8,33.8,33.8,33.8,33.8,33.8,33.8,33.8,33.8,33.8,33.8,33.8,33.8,33.8,33.8,33.8,33.8,33.8,33.8,33.8,33.8,33.8]},{"laag":20.4,"start":30000,"flp":[21.5,22.5,23.4,24.0,24.5,25.1,25.6,26.0,26.3,26.6,26.9,27.1,27.3,27.4,27.6,27.7,27.9,28.0,28.2,28.3,28.6,28.8,29.1,29.4,29.8,30.3,30.7,31.1,31.4,31.8,32.1,32.5,32.8,33.0,33.3,33.6,33.8,34.0,34.1,34.2,34.3,34.4,34.5,34.6,34.7,34.8,34.8,34.8,34.8,34.8,34.8,34.8,34.8,34.8,34.8,34.8,34.8,34.8,34.8,34.8,34.8,34.8,34.8,34.8,34.8,34.8,34.8,34.8,34.8,34.9,34.9,34.9,34.9,34.9,35.0,35.0,35.0,35.0,35.1,35.1,35.1,35.1,35.1,35.1,35.1,35.1,35.1,35.1,35.1,35.1,35.1,35.1,35.1,35.1,35.1,35.1,35.1,35.1,35.1,35.1,35.1]},{"laag":20.7,"start":30000,"flp":[21.8,22.8,23.8,24.5,25.1,25.6,26.1,26.6,27.0,27.3,27.6,27.9,28.1,28.3,28.4,28.6,28.7,28.9,29.0,29.2,29.4,29.7,30.0,30.4,30.7,31.1,31.6,32.0,32.4,32.8,33.1,33.5,33.8,34.1,34.4,34.6,34.9,35.2,35.4,35.6,35.7,35.8,35.9,36.0,36.1,36.1,36.1,36.1,36.1,36.1,36.1,36.1,36.1,36.1,36.1,36.1,36.1,36.1,36.1,36.1,36.1,36.1,36.1,36.1,36.1,36.1,36.1,36.1,36.1,36.1,36.1,36.1,36.1,36.2,36.2,36.2,36.2,36.3,36.3,36.3,36.3,36.3,36.3,36.3,36.3,36.3,36.3,36.3,36.3,36.3,36.3,36.3,36.3,36.3,36.3,36.3,36.3,36.3,36.3,36.3,36.3]},{"laag":20.9,"start":30000,"flp":[22.1,23.1,24.1,24.8,25.5,26.1,26.6,27.1,27.5,27.9,28.2,28.5,28.8,29.0,29.2,29.4,29.5,29.7,29.9,30.0,30.2,30.5,30.8,31.2,31.6,32.0,32.4,32.8,33.3,33.7,34.1,34.4,34.8,35.1,35.4,35.6,36.0,36.2,36.4,36.7,36.9,37.1,37.3,37.3,37.3,37.3,37.3,37.3,37.3,37.3,37.3,37.3,37.3,37.3,37.3,37.3,37.3,37.3,37.3,37.3,37.3,37.3,37.3,37.3,37.3,37.3,37.3,37.3,37.3,37.3,37.3,37.3,37.3,37.3,37.4,37.4,37.4,37.4,37.4,37.5,37.5,37.5,37.5,37.5,37.5,37.5,37.5,37.5,37.5,37.5,37.5,37.5,37.5,37.5,37.5,37.5,37.5,37.5,37.5,37.5,37.5]},{"laag":21.1,"start":30000,"flp":[22.3,23.4,24.4,25.2,25.9,26.5,27.1,27.5,28.0,28.4,28.8,29.1,29.4,29.7,29.9,30.1,30.3,30.4,30.6,30.8,31.0,31.3,31.6,32.0,32.4,32.9,33.2,33.7,34.1,34.5,34.9,35.3,35.7,36.0,36.3,36.6,36.8,37.1,37.5,37.7,37.9,38.2,38.4,38.4,38.4,38.4,38.4,38.4,38.4,38.4,38.4,38.4,38.4,38.4,38.4,38.4,38.4,38.4,38.4,38.4,38.4,38.4,38.4,38.4,38.4,38.4,38.4,38.4,38.4,38.4,38.4,38.4,38.4,38.4,38.5,38.5,38.5,38.5,38.5,38.5,38.6,38.6,38.6,38.6,38.6,38.6,38.6,38.6,38.6,38.6,38.6,38.6,38.6,38.6,38.6,38.6,38.6,38.6,38.6,38.6,38.6]},{"laag":21.3,"start":30000,"flp":[22.5,23.7,24.7,25.5,26.2,26.9,27.5,28.0,28.4,28.9,29.3,29.6,30.0,30.3,30.6,30.8,30.9,31.1,31.3,31.5,31.7,32.0,32.3,32.7,33.2,33.6,34.0,34.4,34.8,35.3,35.7,36.1,36.5,36.8,37.2,37.5,37.8,38.0,38.3,38.6,38.9,39.1,39.4,39.5,39.5,39.5,39.5,39.5,39.5,39.5,39.5,39.5,39.5,39.5,39.5,39.5,39.5,39.5,39.5,39.5,39.5,39.5,39.5,39.5,39.5,39.5,39.5,39.5,39.5,39.5,39.5,39.5,39.5,39.5,39.5,39.5,39.5,39.6,39.6,39.6,39.6,39.6,39.6,39.6,39.6,39.6,39.6,39.6,39.6,39.6,39.6,39.6,39.6,39.6,39.6,39.6,39.6,39.6,39.6,39.6,39.6]},{"laag":21.5,"start":30000,"flp":[22.7,23.9,24.9,25.7,26.5,27.2,27.9,28.4,28.9,29.3,29.7,30.1,30.5,30.8,31.1,31.4,31.6,31.8,32.0,32.2,32.4,32.7,33.0,33.5,33.9,34.3,34.7,35.2,35.5,36.0,36.4,36.8,37.2,37.6,37.9,38.3,38.6,38.9,39.2,39.4,39.7,39.9,40.3,40.5,40.6,40.6,40.6,40.6,40.6,40.6,40.6,40.6,40.6,40.6,40.6,40.6,40.6,40.6,40.6,40.6,40.6,40.6,40.6,40.6,40.6,40.6,40.6,40.6,40.6,40.6,40.6,40.6,40.6,40.6,40.6,40.6,40.6,40.6,40.6,40.6,40.6,40.6,40.6,40.6,40.6,40.6,40.6,40.6,40.6,40.6,40.6,40.6,40.6,40.6,40.6,40.6,40.6,40.6,40.6,40.6,40.6]},{"laag":21.7,"start":30000,"flp":[22.9,24.1,25.2,26.0,26.7,27.5,28.2,28.8,29.2,29.7,30.1,30.5,30.9,31.3,31.6,31.9,32.2,32.4,32.6,32.8,33.0,33.3,33.7,34.1,34.5,35.0,35.5,35.9,36.3,36.6,37.1,37.5,37.9,38.3,38.6,39.0,39.3,39.7,40.0,40.3,40.5,40.7,41.0,41.3,41.6,41.7,41.7,41.7,41.7,41.7,41.7,41.7,41.7,41.7,41.7,41.7,41.7,41.7,41.7,41.7,41.7,41.7,41.7,41.7,41.7,41.7,41.7,41.7,41.7,41.7,41.7,41.7,41.7,41.7,41.7,41.7,41.7,41.7,41.7,41.7,41.7,41.7,41.7,41.7,41.7,41.7,41.7,41.7,41.7,41.7,41.7,41.7,41.7,41.7,41.7,41.7,41.7,41.7,41.7,41.7,41.7]}]}
+};
+
+/* ============================ Hulpfuncties ============================ */
+const $ = s => document.querySelector(s);
+const $$ = s => Array.from(document.querySelectorAll(s));
+const nf0 = new Intl.NumberFormat("nl-NL",{maximumFractionDigits:0});
+const nf2 = new Intl.NumberFormat("nl-NL",{minimumFractionDigits:2,maximumFractionDigits:2});
+const eur = (n,d=0) => "€ " + (d ? nf2.format(n) : nf0.format(Math.round(n)));
+const pct = n => nf2.format(n) + "%";
+const getal = el => { const v = (el.value||"").replace(/\D/g,""); return v ? parseInt(v,10) : 0; };
+const zet = (el,n) => { el.value = n ? nf0.format(Math.round(n)) : (n===0 ? "0" : ""); };
+const radio = name => (document.querySelector(`input[name="${name}"]:checked`)||{}).value;
+const annuiteit = (P,r,n) => { const i=r/1200; return i===0 ? P/n : P*i/(1-Math.pow(1+i,-n)); };
+const effectief = r => (Math.pow(1+r/1200,12)-1)*100;
+const r2 = n => Math.round(n*100)/100;
+
+/* Bedragvelden: duizendtallen live opmaken, cursor behouden */
+function formatteerVeld(el){
+  const pos = el.selectionStart ?? el.value.length;
+  const cijfersVoor = el.value.slice(0,pos).replace(/\D/g,"").length;
+  const cijfers = el.value.replace(/\D/g,"").replace(/^0+(?=\d)/,"").slice(0,9);
+  el.value = cijfers ? nf0.format(parseInt(cijfers,10)) : "";
+  let n=0, p=0;
+  while(p<el.value.length && n<cijfersVoor){ if(/\d/.test(el.value[p])) n++; p++; }
+  if(document.activeElement===el) el.setSelectionRange(p,p);
+}
+
+/* ============================ Toestand ============================ */
+const S = { stap:0, verst:0, waardeNaHandmatig:false, eigenGeldVoorgesteld:false };
+
+/* ============================ Rekenkern ============================ */
+function risicoKlasse(ltv, nhg){
+  if(nhg) return "nhg";
+  if(ltv<=60) return "l60";
+  if(ltv<=80) return "l80";
+  if(ltv<=90) return "l90";
+  return "g90";
+}
+
+function kosten(){
+  const prijs = getal($("#vraagprijs"));
+  const H = getal($("#hoofdsom"));
+  const verbouwen = radio("verbouwen")==="ja";
+  const R = verbouwen ? getal($("#verbouwKosten")) : 0;
+  const waardeNa = getal($("#waardeNa"));
+  const W = (verbouwen && waardeNa>0) ? waardeNa : prijs;              // woningwaarde (marktwaarde)
+  const ovb = Math.round(prijs*CONFIG.overdrachtsbelasting);
+  const nhgMogelijk = H<=CONFIG.nhgKostengrens && prijs<=CONFIG.nhgKostengrens && W<=CONFIG.nhgKostengrens;
+  const nhg = nhgMogelijk && radio("nhg")==="ja";
+  const nhgKosten = nhg ? Math.floor(H*CONFIG.nhgProvisie) : 0;
+  const gefinVerbouwing = verbouwen ? Math.max(0, Math.min(R, Math.min(W,H)-prijs)) : 0;
+  const eigenInbrengVerbouwing = R - gefinVerbouwing;
+  const aankoop = R + ovb + CONFIG.notarisLevering;
+  const hypKosten = CONFIG.notarisHypotheek + CONFIG.taxatie + CONFIG.advies + nhgKosten;
+  const totaal = prijs + aankoop + hypKosten;
+  const benodigd = Math.max(H,prijs) + hypKosten + (aankoop - gefinVerbouwing); // te financieren vóór eigen geld
+  const eigen = radio("eigengeld")==="ja" ? getal($("#eigenGeld")) : 0;
+  const teFinancieren = Math.max(0, benodigd - eigen);
+  const overschot = Math.max(0, H - W*CONFIG.maxLtv);                 // boven 100% van de woningwaarde
+  const tekort = (benodigd - H - eigen) > 0 ? benodigd - H : 0;        // eigen geld nodig
+  return {prijs,H,verbouwen,R,W,ovb,nhgMogelijk,nhg,nhgKosten,gefinVerbouwing,eigenInbrengVerbouwing,
+          aankoop,hypKosten,totaal,benodigd,eigen,teFinancieren,overschot,tekort};
+}
+
+function rvpTarieven(k){
+  const ltv = k.W>0 ? k.teFinancieren/k.W*100 : 100;
+  const klasse = risicoKlasse(ltv,k.nhg);
+  const out = {};
+  for(const j of Object.keys(CONFIG.rentes)){ out[j] = {rente:CONFIG.rentes[j][klasse], klasse, ltv}; }
+  return out;
+}
+
+/* Maandlast met automatische verlaging van de risico-opslag bij dalende LTV (MUNT-systematiek) */
+function aflosschema(P, W, rvp, nhg){
+  const tab = CONFIG.rentes[rvp], n = CONFIG.looptijd;
+  const rente0 = nhg ? tab.nhg : tab[risicoKlasse(W>0?P/W*100:100,false)];
+  const renteBij = ltv => nhg ? tab.nhg : (ltv>90 ? rente0 : ltv>80 ? tab.l90 : ltv>60 ? tab.l80 : tab.l60);
+  let saldo=P, rente=rente0, termijn=annuiteit(P,rente,n), totaal=0, totRente=0;
+  const maanden=[];
+  for(let m=0;m<n;m++){
+    const r = renteBij(W>0 ? saldo/W*100 : 100);
+    if(r!==rente){ rente=r; termijn=annuiteit(saldo,rente,n-m); }
+    const rd = saldo*rente/1200, afl = termijn-rd;
+    saldo -= afl; totaal += termijn; totRente += rd;
+    maanden.push({m,saldo:Math.max(0,saldo),rente,rd,afl,termijn});
+  }
+  return {eerste:maanden[0].termijn, rente0, totaal, totRente, maanden};
+}
+
+function leeftijdOp(geb, d){ let a=d.getFullYear()-geb.getFullYear(); const mm=d.getMonth()-geb.getMonth(); if(mm<0||(mm===0&&d.getDate()<geb.getDate())) a--; return a; }
+function aowBereikt(geb){
+  const vandaag = new Date();
+  const aow = new Date(geb); aow.setFullYear(aow.getFullYear()+67);
+  if(geb >= new Date(1961,0,1)) aow.setMonth(aow.getMonth()+3);   // AOW-leeftijd 67 jaar en 3 maanden vanaf 2028
+  return vandaag >= aow;
+}
+function geboortedatum(){
+  const d=+$("#gebDag").value, m=+$("#gebMaand").value, j=+$("#gebJaar").value;
+  if(!d||!m||String($("#gebJaar").value).length!==4) return null;
+  const dt = new Date(j,m-1,d);
+  if(dt.getFullYear()!==j||dt.getMonth()!==m-1||dt.getDate()!==d) return null;
+  const lft = leeftijdOp(dt,new Date());
+  if(lft<18||lft>110) return null;
+  return dt;
+}
+
+function maxHypotheek(k, rvp){
+  const geb = geboortedatum();
+  const inkomen = getal($("#inkomen"));
+  if(!geb || !inkomen) return null;
+  const partner = radio("partner")==="ja";
+  const partnerInk = partner ? getal($("#partnerInkomen")) : 0;
+  const schulden = radio("schulden")==="ja";
+  const alimentatieJaar = schulden ? getal($("#alimentatie"))*12 : 0;
+  const toetsinkomen = Math.max(0, inkomen + partnerInk - alimentatieJaar);
+  const rente = rvpTarieven(k)[rvp].rente;
+  const toetsrente = rvp<10 ? Math.max(rente, CONFIG.toetsrenteKort) : rente;
+  const idx = Math.min(11, Math.max(0, Math.ceil((toetsrente-1.5)/0.5 - 1e-9)));
+  const t = CONFIG.flp[aowBereikt(geb) ? "aow" : "normaal"][idx];
+  let flp, bonus=0;
+  if(toetsinkomen < t.start){ flp = t.laag; }
+  else { flp = t.flp[Math.min(t.flp.length-1, Math.floor((toetsinkomen-t.start)/1000))]; if(!partner) bonus = CONFIG.alleenstaandeBonus; }
+  const lastMaand = (schulden ? getal($("#krediet"))*CONFIG.kredietFactor + getal($("#studie"))*CONFIG.studieFactor[idx] : 0)
+                  + (radio("erfpacht")==="ja" ? getal($("#canon"))/12 : 0);
+  const a = annuiteit(1,toetsrente,CONFIG.looptijd);
+  let max = (toetsinkomen*flp/100/12 - lastMaand)/a + bonus;
+  max = Math.max(0,max);
+  if(max>0) max += CONFIG.labelBonus[$("#energielabel").value]||0;
+  return {max: r2(max), toetsrente, flp, aow: aowBereikt(geb)};
+}
+
+/* ============================ Weergave ============================ */
+function overzichtHTML(k){
+  return `
+  <h2 class="sr-only">Kostenoverzicht</h2>
+  <div class="overzicht">
+    <div class="posten">
+      <h3 class="subkop">Kosten aankoop huis</h3>
+      <dl>
+      <div><dt>${k.verbouwen && k.gefinVerbouwing>0 ? `Eigen inbreng verbouwing (totale verbouwing ${eur(k.R)})` : "Verbouwing"}</dt><dd>${eur(k.verbouwen ? k.eigenInbrengVerbouwing : 0)}</dd></div>
+      <div><dt>Overdrachtsbelasting</dt><dd>${eur(k.ovb)}</dd></div>
+      <div><dt>Notariskosten leveringsakte</dt><dd>${eur(CONFIG.notarisLevering)}</dd></div>
+      </dl>
+      <h3 class="subkop">Hypotheekkosten</h3>
+      <dl>
+      <div><dt>Notariskosten hypotheekakte</dt><dd>${eur(CONFIG.notarisHypotheek)}</dd></div>
+      <div><dt>Taxatiekosten + advieskosten</dt><dd>${eur(CONFIG.taxatie+CONFIG.advies)}</dd></div>
+      <div><dt>Nationale Hypotheek Garantie</dt><dd>${eur(k.nhgKosten)}</dd></div>
+      </dl>
+    </div>
+    <div class="totalen" role="list" aria-label="Totalen">
+      <div class="blok" role="listitem"><span class="l">Kosten aankoop huis:</span> <span class="w">${eur(k.aankoop)}</span></div>
+      <div class="blok" role="listitem"><span class="l">Koopsom:</span> <span class="w">${eur(k.prijs)}</span></div>
+      <div class="blok" role="listitem"><span class="l">Hypotheekkosten:</span> <span class="w">${eur(k.hypKosten)}</span></div>
+      <div class="blok groen" role="listitem">
+        <div><span>Totale kosten:</span> <span>${eur(k.totaal)}</span></div>
+        <div><span>Aftrek eigen geld:</span> <span>${eur(k.totaal-k.teFinancieren)}</span></div>
+      </div>
+      <div class="blok fin" role="listitem"><span>Te financieren:</span> <strong>${eur(k.teFinancieren)}</strong></div>
+    </div>
+  </div>`;
+}
+
+function meldingenStap2(k){
+  const box = $("#meldingenStap2"); let h="";
+  if(k.overschot>0){
+    h += `<div class="melding fout"><strong>De gewenste financiering is niet haalbaar</strong> aangezien u meer leent dan de wettelijk toegestane 100% van de waarde van de woning. Dit kunt u oplossen door de gewenste hoofdsom te verlagen naar ${eur(k.W)}.<br><button type="button" class="btn klein sec" id="fixHoofdsom">Hoofdsom verlagen naar ${eur(k.W)}</button></div>`;
+  } else if(k.tekort>0){
+    h += `<div class="melding fout"><strong>De gewenste financiering is niet haalbaar</strong> aangezien de kosten hoger zijn dan de gewenste hoofdsom. Dit kunt u oplossen door ${eur(k.tekort)} eigen geld in te leggen.<br><button type="button" class="btn klein sec" id="fixEigenGeld">${eur(k.tekort)} eigen geld invullen</button></div>`;
+  }
+  if(box.dataset.h!==h){ box.innerHTML=h; box.dataset.h=h; }
+  const fh=$("#fixHoofdsom"); if(fh) fh.onclick=()=>{ S.interactie=true; zet($("#hoofdsom"),k.W); update(); $("#hoofdsom").focus(); };
+  const fe=$("#fixEigenGeld"); if(fe) fe.onclick=()=>{ S.interactie=true; kiesRadio("eigengeld","ja"); zet($("#eigenGeld"),k.tekort); update(); $("#eigenGeld").focus(); };
+}
+
+function kiesRadio(name,val){ const el=document.querySelector(`input[name="${name}"][value="${val}"]`); if(el){ el.checked=true; } toonUitklap(); }
+function toonUitklap(){
+  $("#verbouwenUit").hidden = radio("verbouwen")!=="ja";
+  $("#eigengeldUit").hidden = radio("eigengeld")!=="ja";
+  $("#partnerUit").hidden = radio("partner")!=="ja";
+  $("#schuldenUit").hidden = radio("schulden")!=="ja";
+  $("#erfpachtUit").hidden = radio("erfpacht")!=="ja";
+}
+
+function bouwRvp(){
+  const box=$("#rvpKeuze");
+  box.innerHTML = Object.keys(CONFIG.rentes).map(j=>`<label><input type="radio" name="rvp" value="${j}" ${+j===CONFIG.standaardRvp?"checked":""}><span class="knop" aria-hidden="true"><span>${j} jr</span><span class="rente" data-rvp="${j}"></span></span></label>`).join("");
+}
+
+/* Schermlezer: vat de uitkomst samen, pas na 1,2 s rust (niet bij elke toetsaanslag) */
+let srTimer=null, srVorige="";
+function kondigAan(tekst){
+  clearTimeout(srTimer);
+  srTimer=setTimeout(()=>{ if(tekst===srVorige) return; srVorige=tekst; const s=$("#srStatus"); s.textContent=""; setTimeout(()=>{ s.textContent=tekst; },50); },1200);
+}
+function samenvatting(k, mh, sch){
+  if(S.stap===2){
+    if(k.overschot>0) return `Let op: u leent meer dan 100% van de woningwaarde. Verlaag de hoofdsom naar ${eur(k.W)}. Onder de vraag over eigen geld staat een knop om dit direct te doen.`;
+    if(k.tekort>0) return `Let op: er is ${eur(k.tekort)} eigen geld nodig. Onder de vraag over eigen geld staat een knop om dit direct in te vullen.`;
+    return `Totale kosten ${eur(k.totaal)}. Te financieren ${eur(k.teFinancieren)}.`;
+  }
+  if(S.stap===3 && mh){
+    const ok = mh.max >= k.teFinancieren;
+    return `Financieel haalbaar ${eur(mh.max)}. Bruto maandlast ${eur(sch.eerste)}. ` + (ok ? "Het te financieren bedrag past binnen uw leenruimte." : `Niet haalbaar: u komt ${eur(k.teFinancieren-mh.max)} tekort.`);
+  }
+  return "";
+}
+let laatste = {};
+function update(){
+  toonUitklap();
+  const k = kosten();
+  // NHG-schakelaar
+  $("#nhgVeld").hidden = !k.nhgMogelijk;
+  $("#nhgNiet").hidden = k.nhgMogelijk || !k.prijs;
+  $$("[data-overzicht]").forEach(el=>{ el.innerHTML = overzichtHTML(k); });
+  meldingenStap2(k);
+
+  // Stap 3
+  const tar = rvpTarieven(k);
+  $$("#rvpKeuze .rente").forEach(s=>{ const r=tar[s.dataset.rvp].rente; s.textContent=pct(r); s.closest("label").querySelector("input").setAttribute("aria-label",`${s.dataset.rvp} jaar vast, ${pct(r)} rente`); });
+  const rvp = +(radio("rvp")||CONFIG.standaardRvp);
+  const rente = tar[rvp].rente;
+  $$(".rvpJaar").forEach(e=>e.textContent=rvp);
+  const sch = aflosschema(k.teFinancieren, k.W, rvp, k.nhg);
+  $("#afmLening").textContent = eur(k.teFinancieren);
+  $("#afmRente").textContent = pct(rente);
+  $("#afmJkp").textContent = pct(r2(effectief(rente)));
+  const mh = maxHypotheek(k, rvp);
+  const lbl = $("#energielabel").value;
+  $("#ebv").textContent = eur(CONFIG.ebv[lbl]);
+  $("#ebvRegel").hidden = !CONFIG.ebv[lbl];
+  const m3 = $("#meldingenStap3"); let h="";
+  if(mh){
+    $("#afmMaand").textContent = eur(sch.eerste);
+    $("#afmTotaal").textContent = eur(sch.totaal);
+    $("#maxHyp").textContent = eur(mh.max);
+    const ok = mh.max >= k.teFinancieren;
+    $("#haalbaarBlok").className = "blok haalbaar " + (ok?"ok":"nok");
+    $("#haalbaarStatus").textContent = ok ? "✓ Het te financieren bedrag past binnen uw leenruimte" : "✗ Het te financieren bedrag is hoger dan uw leenruimte";
+    if(!ok) h += `<div class="melding fout"><strong>De gewenste financiering is niet haalbaar</strong> aangezien u meer leent dan wat toegestaan is met uw maandelijkse inkomsten. Om de financiering akkoord te krijgen dient u ${eur(k.teFinancieren-mh.max)} eigen geld in te leggen of een lager bedrag te lenen.</div>`;
+    if(mh.aow) h += `<div class="melding let-op">U heeft de AOW-leeftijd bereikt. Wij rekenen met de normen voor AOW-gerechtigden. Uw adviseur bekijkt welk inkomen na pensionering meetelt.</div>`;
+  } else {
+    $("#afmMaand").textContent = k.teFinancieren ? eur(sch.eerste) : "–";
+    $("#afmTotaal").textContent = k.teFinancieren ? eur(sch.totaal) : "–";
+    $("#maxHyp").textContent = "–";
+    $("#haalbaarBlok").className = "blok haalbaar";
+    $("#haalbaarStatus").textContent = "Vul uw geboortedatum en inkomen in";
+  }
+  if(k.overschot>0) h += `<div class="melding fout"><strong>De gewenste financiering is niet haalbaar</strong> aangezien u meer leent dan de wettelijk toegestane 100% van de waarde van de woning. Ga terug naar stap 2 om dit aan te passen.</div>`;
+  if(m3.dataset.h!==h){ m3.innerHTML=h; m3.dataset.h=h; }
+
+  // Stap 4
+  $("#resBedrag").textContent = eur(k.teFinancieren);
+  $("#resMaand").textContent = eur(sch.eerste);
+  laatste = {k, rvp, rente, sch, mh};
+  if(S.interactie){ const z=samenvatting(k,mh,sch); if(z) kondigAan(z); }
+}
+
+/* ============================ Validatie ============================ */
+function koppelFout(input, foutId, toon){
+  const ids = (input.getAttribute("aria-describedby")||"").split(" ").filter(x=>x && x!==foutId);
+  if(toon) ids.push(foutId);
+  if(ids.length) input.setAttribute("aria-describedby", ids.join(" ")); else input.removeAttribute("aria-describedby");
+}
+function veldFout(input, wrap, fout, toon){
+  fout.hidden = !toon; input.setAttribute("aria-invalid", toon ? "true" : "false"); koppelFout(input, fout.id, toon);
+  if(wrap) wrap.classList.toggle("ongeldig", toon);
+}
+function toonDatumFout(toon){
+  $("#datumFout").hidden = !toon; $("#datumWrap").classList.toggle("ongeldig",toon);
+  ["#gebDag","#gebMaand","#gebJaar"].forEach(s=>{ $(s).setAttribute("aria-invalid",toon?"true":"false"); koppelFout($(s),"datumFout",toon); });
+}
+function valideer(stap){
+  if(stap===1){
+    const leeg = !getal($("#vraagprijs"));
+    veldFout($("#vraagprijs"),$("#vraagprijsWrap"),$("#vraagprijsFout"),leeg);
+    if(leeg){ $("#vraagprijs").focus(); return false; }
+  }
+  if(stap===2){
+    const k = kosten();
+    if(!k.H){ $("#hoofdsom").focus(); return false; }
+    if(k.overschot>0 || k.tekort>0){ const b=$("#meldingenStap2 button"); (b||$("#hoofdsom")).focus(); return false; }
+  }
+  if(stap===3){
+    let ok=true, eerste=null;
+    const geb = geboortedatum();
+    toonDatumFout(!geb);
+    if(!geb){ ok=false; eerste=$("#gebDag"); }
+    const ink = getal($("#inkomen"))>0;
+    veldFout($("#inkomen"),$("#inkomenWrap"),$("#inkomenFout"),!ink);
+    if(!ink){ ok=false; eerste = eerste || $("#inkomen"); }
+    if(kosten().overschot>0){ ok=false; }
+    if(eerste) eerste.focus();
+    return ok;
+  }
+  return true;
+}
+
+/* ============================ Navigatie ============================ */
+const STAPNAMEN = ["Start","Mijn totale kosten","Kan ik dit bedrag lenen?","Mijn overzicht"];
+function tekenVoortgang(){
+  const ol=$("#stappenLijst");
+  ol.innerHTML = STAPNAMEN.map((n,i)=>{
+    const s=i+1, actief = S.stap===s || (s===4 && S.stap===5), klaar = s<S.stap || (s<=S.verst && !actief);
+    const cls = actief ? "actief" : (klaar ? "klaar" : "");
+    const inhoud = (klaar && s<=S.verst)
+      ? `<button type="button" data-ga="${s}"><span class="txt">${n}</span><span class="sr-only"> (stap ${s} van 4, voltooid)</span></button>`
+      : `<span class="lbl"><span class="txt">${n}</span><span class="sr-only"> (stap ${s} van 4${actief?", huidige stap":""})</span></span>`;
+    return `<li class="${cls}" ${actief?'aria-current="step"':""}>${inhoud}<span class="stip" aria-hidden="true"></span></li>`;
+  }).join("");
+  $("#pijlTerug").hidden = S.stap<=1;
+  $("#pijlVerder").hidden = S.stap>=4;
+}
+function gaNaar(n){
+  n = Math.max(0, Math.min(5, n));
+  if(n>S.stap){ for(let s=Math.max(1,S.stap); s<n; s++){ if(!valideer(s)) { if(s!==S.stap) toonStap(s); return; } } }
+  if(n===2 && S.stap===1){
+    // Bij binnenkomst stap 2: hoofdsom = vraagprijs als nog niet gezet; tekort direct voorstellen (zoals origineel)
+    if(!getal($("#hoofdsom"))) zet($("#hoofdsom"), getal($("#vraagprijs")));
+    const k=kosten();
+    if(!S.eigenGeldVoorgesteld && k.tekort>0){ kiesRadio("eigengeld","ja"); zet($("#eigenGeld"),k.tekort); S.eigenGeldVoorgesteld=true; }
+  }
+  toonStap(n);
+}
+function toonStap(n, stil){
+  S.interactie=false; clearTimeout(srTimer); srVorige="";
+  S.stap=n; S.verst=Math.max(S.verst,Math.min(n,4));
+  $$(".stap").forEach(s=>s.hidden = +s.dataset.stap!==n);
+  $("#voortgangBalk").hidden = n===0;
+  update(); tekenVoortgang();
+  const h = document.querySelector(`.stap[data-stap="${n}"] h1`);
+  window.scrollTo(0,0);
+  if(h && !stil) h.focus({preventScroll:true});
+  document.title = (n===0 ? "" : (n===5 ? "Hoe nu verder – " : `Stap ${Math.min(n,4)} van 4: ${STAPNAMEN[Math.min(n,4)-1]} – `)) + "MUNT Hypotheken – Hypotheekberekening";
+}
+
+/* ============================ Rapport (print via window.open) ============================ */
+function rapportHTML(){
+  update();
+  const {k,rvp,rente,sch,mh} = laatste;
+  const datum = new Date().toLocaleDateString("nl-NL",{day:"numeric",month:"long",year:"numeric"});
+  const nu = new Date();
+  // Jaaroverzicht: eerste maand, daarna steeds dezelfde maand in het volgende jaar
+  const rijen=[]; let vorige=null;
+  for(let j=0;j<30;j++){
+    const m = sch.maanden[j*12];
+    const label = j===0 ? `${nu.getFullYear()} (1e maand)` : String(nu.getFullYear()+j);
+    rijen.push(`<tr><td>${label}</td><td>${eur(m.saldo)}</td><td>${pct(m.rente)}</td><td>${eur(m.rd)}</td><td>${eur(m.afl)}</td><td>${eur(m.termijn)}</td></tr>`);
+    if(vorige && m.rente<vorige.rente){
+      rijen.push(`<tr class="afslag"><td>Afslag</td><td></td><td>▾ -${nf2.format(vorige.rente-m.rente)}%</td><td>▾ ${eur(m.rd-vorige.rd)}</td><td></td><td></td></tr>`);
+    }
+    vorige=m;
+  }
+  const verbouwRegel = k.verbouwen ? `<tr><td>Verbouwing (eigen inbreng)</td><td>${eur(k.eigenInbrengVerbouwing)}</td></tr>` : `<tr><td>Verbouwing</td><td>${eur(0)}</td></tr>`;
+  return `<!doctype html><html lang="nl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Uw persoonlijke hypotheekberekening – ${datum}</title>
+<style>
+body{font:14px/1.5 "Open Sans","Segoe UI",Arial,sans-serif;color:#1f2a2e;margin:0;padding:24px;max-width:960px;margin:auto}
+h1{font-size:26px;text-transform:uppercase;margin:0}h2{font-size:17px;text-transform:uppercase;border-bottom:3px solid #00d796;padding-bottom:4px;margin:28px 0 10px}
+.kop{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;border-bottom:1px solid #ccc;padding-bottom:12px}
+.kern{display:flex;gap:16px;margin:16px 0}.kern div{flex:1;background:#3d3d3d;color:#fff;padding:12px 16px;border-radius:6px}.kern strong{display:block;font-size:20px}
+table{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}th,td{text-align:left;padding:6px 8px;border-bottom:1px solid #ddd}th{background:#f2f3f1}
+td:not(:first-child),th:not(:first-child){text-align:right}.afslag td{color:#006b4c;font-size:12px;border-bottom:1px dashed #9cd}
+.tot td{font-weight:700;border-top:2px solid #1f2a2e}ol.stappen{display:flex;gap:12px;padding:0;list-style:none;counter-reset:s}ol.stappen li{flex:1;background:#e6fbf4;padding:10px;border-radius:6px}
+ul{padding-left:20px}.klein{font-size:12px;color:#4d5a5f}.knop{position:fixed;right:16px;top:16px;background:#00d796;color:#062a1d;border:0;border-radius:6px;padding:10px 16px;font:inherit;font-weight:700;cursor:pointer}
+.breed{overflow-x:auto}
+@media print{.knop{display:none}body{padding:0}h2{break-after:avoid}.pb{break-before:page}}
+</style></head><body>
+<button class="knop" onclick="window.print()">Afdrukken / opslaan als PDF</button>
+<main>
+<div class="kop"><div><h1>Uw persoonlijke hypotheekberekening</h1><div>${datum}</div></div><div><strong>MUNT</strong> HYPOTHEKEN</div></div>
+<div class="kern"><div>Hypotheekbedrag<strong>${eur(k.teFinancieren)}</strong></div><div>Bruto maandlast<strong>${eur(sch.eerste)}</strong></div></div>
+
+<h2>Wat moet u doen?</h2>
+<ol class="stappen"><li><strong>Stap 1</strong><br>Lees uw hypotheekberekening rustig door</li><li><strong>Stap 2</strong><br>Neem deze mee naar uw hypotheekadviseur</li><li><strong>Stap 3</strong><br>Vraag samen met uw hypotheekadviseur het renteaanbod aan</li><li><strong>Stap 4</strong><br>Een stap dichterbij uw droomwoning</li></ol>
+
+<h2>Wat is dit voor document?</h2>
+<p>Na het invoeren van uw gegevens weet u hoe uw persoonlijke renteaanbod eruit zou kunnen zien, als u deze samen met uw adviseur bij MUNT Hypotheken zou aanvragen. Wij proberen de zaken hiermee zo simpel mogelijk te maken. Maar hypotheken zijn natuurlijk toch een beetje ingewikkeld. Het gaat over veel geld en een langjarige verplichting. Daarom adviseren wij om u bij het afsluiten van een hypotheek te laten bijstaan door een onafhankelijke adviseur.</p>
+<p>U kunt aan dit document geen rechten ontlenen, het is nadrukkelijk geen uitnodiging om met ons een overeenkomst aan te gaan. Dat klinkt onaardig, maar wij vinden het verstandig als u eerst met een adviseur overlegt.</p>
+<p>Wij hebben de door u opgegeven gegevens uitsluitend gebruikt voor het maken van deze hypotheekberekening. Wij hebben deze gegevens niet opgeslagen. Daardoor weten wij op dit moment niets van u en kunnen wij dus ook geen "echt" renteaanbod voor u maken. Later, wanneer u meer gegevens aan ons heeft doorgegeven, doen we dat natuurlijk graag!</p>
+<p>Het afsluiten van een hypotheek is een serieuze aangelegenheid. Wij zullen u vragen om veel papieren aan te leveren en zullen diverse controles doen. Aan de andere kant, een hypotheek is een lening voor uw huis, niet meer en niet minder. Wij proberen het zo simpel mogelijk te maken en wij zijn ervan overtuigd dat uw adviseur u kan helpen bij het maken van de juiste keuzes.</p>
+
+<h2>De voordelen van een MUNT Hypotheek</h2>
+<ul>
+<li>U mag bij MUNT Hypotheken altijd extra aflossen. Dat mag onbeperkt en is zonder kosten als u aflost met uw eigen geld.</li>
+<li>Het rentepercentage dat u betaalt, bepalen wij aan de hand van de hoogte van uw hypotheek en de waarde van uw woning. Als u voldoende heeft afgelost, gaat u automatisch minder rente betalen. Hierdoor betaalt u over de looptijd veel minder rente.</li>
+<li>Is de rente voor soortgelijke geldleningen van MUNT op de dag dat uw hypotheekakte passeert lager dan de rente in het aanbod? Dan krijgt u die lagere rente. U profiteert daardoor van een daling van de tarieven van MUNT Hypotheken tot het moment dat uw hypotheekakte bij de notaris passeert. Als de rente op de dag van passeren hoger is, betaalt u nooit meer dan in uw renteaanbod staat vermeld.</li>
+<li>MUNT Hypotheken biedt uitsluitend hypotheken aan. U heeft daardoor geen verplichting om bijvoorbeeld een nieuwe betaalrekening te openen of andere producten af te nemen.</li>
+<li>U bent helemaal vrij in de keuze waar u een eventuele overlijdensrisicoverzekering wilt afsluiten. Zo kunt u altijd de voor u meest voordelige keuze maken.</li>
+<li>MUNT Hypotheken is een betrouwbare aanbieder met funding door oerdegelijke, Nederlandse pensioenfondsen.</li>
+<li>De actuele hypotheekrentetarieven kunt u vinden op www.munthypotheken.nl/renteoverzicht.</li>
+<li>Voor vragen: kijk op www.munthypotheken.nl of praat met uw adviseur.</li>
+</ul>
+
+<h2 class="pb">Totale kosten aankoop woning (indicatie)</h2>
+<table><tbody>
+${verbouwRegel}
+<tr><td>Overdrachtsbelasting</td><td>${eur(k.ovb)}</td></tr>
+<tr><td>Notariskosten leveringsakte</td><td>${eur(CONFIG.notarisLevering)}</td></tr>
+<tr class="tot"><td>Kosten aankoop woning</td><td>${eur(k.aankoop)}</td></tr>
+<tr><td>Koopsom</td><td>${eur(k.prijs)}</td></tr>
+<tr><td>Notariskosten hypotheekakte</td><td>${eur(CONFIG.notarisHypotheek)}</td></tr>
+<tr><td>Taxatiekosten + advieskosten</td><td>${eur(CONFIG.taxatie+CONFIG.advies)}</td></tr>
+<tr><td>Kosten Nationale Hypotheek Garantie (NHG)</td><td>${eur(k.nhgKosten)}</td></tr>
+<tr class="tot"><td>Hypotheekkosten</td><td>${eur(k.hypKosten)}</td></tr>
+<tr class="tot"><td>Totale kosten</td><td>${eur(k.totaal)}</td></tr>
+<tr><td>Aftrek eigen geld</td><td>${eur(k.totaal-k.teFinancieren)}</td></tr>
+<tr class="tot"><td>Te financieren</td><td>${eur(k.teFinancieren)}</td></tr>
+${mh ? `<tr><td>Financieel haalbaar</td><td>${eur(mh.max,2)}</td></tr>` : ""}
+${CONFIG.ebv[$("#energielabel").value] ? `<tr><td>Extra ruimte voor EBV</td><td>${eur(CONFIG.ebv[$("#energielabel").value])}</td></tr>` : ""}
+</tbody></table>
+
+<h2>Uw maandlast (indicatie)</h2>
+<div class="breed" tabindex="0" role="region" aria-label="Uw maandlast, scrollbare tabel"><table><thead><tr><th>Totale lening</th><th>Vaste rente</th><th>Jaarlijks kostenpercentage</th><th>Bruto maandbedrag</th><th>Looptijd van de lening</th><th>Totaalbedrag</th></tr></thead>
+<tbody><tr><td>${eur(k.teFinancieren)}</td><td>${pct(rente)}</td><td>${pct(r2(effectief(rente)))}</td><td>${eur(sch.eerste,2)}</td><td>360 maanden</td><td>${eur(sch.totaal,2)}</td></tr></tbody></table></div>
+<p class="klein">Dit betreft een annuïteitenhypotheek met een rentevaste periode van ${rvp} jaar waarbij de aanname is gedaan dat de rente gedurende de looptijd van 360 maanden vast staat. De getoonde maandlast is de bruto maandlast. Hoogstwaarschijnlijk heeft u recht op hypotheekrenteaftrek. Uw hypotheekadviseur kan voor u de netto maandlasten berekenen.</p>
+<p class="klein">Notariskosten, taxatiekosten en advieskosten die we gebruiken in deze voorbeeldberekening zijn gemiddelden. De daadwerkelijke kosten kunnen hiervan afwijken. Daarom zijn deze bij de bepaling van het jaarlijks kostenpercentage (JKP) niet meegenomen. Het JKP bestaat uitsluitend uit de effectieve rente die u aan MUNT Hypotheken zou betalen, als u een hypotheek bij ons zou krijgen.</p>
+<p class="klein">De extra ruimte voor EBV is alleen te gebruiken voor één of meer van de goedgekeurde energiebesparende maatregelen. Welke dit zijn, vindt u op www.munthypotheken.nl/duurzaamheid/mijn-woning-verduurzamen/. De maandelijkse lasten voor rente en terugbetaling EBV zijn in de maandlastenberekening niet meegenomen.</p>
+
+<h2 class="pb">Verloop restschuld en maandlasten (indicatie)</h2>
+<p>Hoeveel betaalt u eigenlijk aan rente en aflossing per maand tijdens de looptijd van uw hypotheek?</p>
+<p class="klein">Dit betreft een annuïteitenhypotheek met een rentevaste periode van ${rvp} jaar, waarbij de aanname is gedaan dat de rente gedurende de looptijd van 360 maanden vast staat. Natuurlijk dient dit overzicht alleen als indicatie en zijn de getallen daarin alleen van toepassing als er de komende 30 jaar niets verandert. Dat komt niet zo heel vaak voor.</p>
+<div class="breed" tabindex="0" role="region" aria-label="Verloop restschuld, scrollbare tabel"><table><thead><tr><th>Jaar</th><th>Schuldrest</th><th>Rente</th><th>Rentelast</th><th>Aflossing</th><th>Bruto maandlast</th></tr></thead>
+<tbody>${rijen.join("")}
+<tr class="tot"><td>Totaal</td><td></td><td></td><td>${eur(sch.totRente,2)}</td><td>${eur(k.teFinancieren)}</td><td>${eur(sch.totaal,2)}</td></tr>
+</tbody></table></div>
+<p><strong>Totale investering: ${eur(sch.totaal,2)}</strong></p>
+
+<h2>Toelichting verloop restschuld en maandlasten</h2>
+<p>De hypotheekvorm waarvoor u heeft gekozen is een annuïteitenhypotheek. Een annuïteitenhypotheek is een lening voor een huis, die u in maximaal dertig jaar aflost door maandelijks hetzelfde bedrag te betalen. Het maandbedrag bestaat uit een deel rente en een deel aflossing. De verhouding tussen die twee verandert ongemerkt elke maand een beetje. De eerste jaren betaalt u vooral rente, later gaat u meer aflossen. Het rentedeel wordt dus jaarlijks kleiner. Dat betekent dat de nettolasten van uw hypotheek langzaam stijgen.</p>
+<p>Hoe meer u leent ten opzichte van de waarde van uw huis, des te groter is het risico. Voor dit risico rekenen hypotheekaanbieders een zogenaamde renteopslag. Deze opslag is al verwerkt in onze rentes. Bij MUNT Hypotheken passen wij de renteopslag automatisch aan als u aflost op uw hypotheek. Een opslag wordt aangepast of vervalt soms zelfs helemaal als de verhouding van de totale hypotheek ten opzichte van de waarde van het huis daalt tot onder een van de opslaggrenzen. Hierdoor betaalt u over de looptijd van uw hypotheek veel minder rente. In het overzicht met het verloop van de maandlast hebben wij deze korting voor u doorgerekend.</p>
+<p><strong>Belangrijk om te weten:</strong></p>
+<ul>
+<li>Er wordt 30 jaar gerekend met het rentepercentage van de gekozen rentevaste periode, ook al is dat geen 30 jaar vast.</li>
+<li>Gedurende de gekozen rentevaste periode is de bruto maandlast voor deze hypotheek gebaseerd op de schuldrest ten opzichte van de waarde van het onderpand. Hierbij hebben wij geen rekening gehouden met een aanname voor wat betreft de premie van een eventuele overlijdensrisicoverzekering.</li>
+<li>Hypotheekrente is veelal aftrekbaar voor de inkomstenbelasting. Hierdoor zullen de werkelijke (netto) maandlasten lager uitkomen. Ga naar uw adviseur voor een overzicht op maat.</li>
+</ul>
+
+<h2>Ons advies: laat u adviseren</h2>
+<p>Goed hypotheekadvies is goud waard. Laat u daarom adviseren door een onafhankelijke hypotheekadviseur. Grote kans dat die u een MUNT Hypotheek aanraadt, omdat die het best bij u past.</p>
+<p>Zoek een adviseur bij u in de buurt op: https://www.munthypotheken.nl/vind-een-adviseur/</p>
+
+<h2>Waar u rekening mee moet houden</h2>
+<p>Als u een hypotheek hebt, loopt u verschillende betalingsrisico's. Zoals een schuld die overblijft als uw huis verkocht wordt of woonlasten die niet meer passen bij uw inkomen. De betaalbaarheid van uw hypotheek kan minder worden door allerlei factoren:</p>
+<ul>
+<li>De woonlasten kunnen stijgen door bijvoorbeeld een verhoging van het rentepercentage.</li>
+<li>Het kan moeilijk worden uw hypotheeklasten te betalen als uw overige uitgaven stijgen door bijvoorbeeld ziekte, gezinsuitbreiding of overheidsmaatregelen.</li>
+<li>Uw inkomen kan dalen. Als u bijvoorbeeld minder gaat werken of als u van baan verandert.</li>
+<li>U loopt het risico een schuld over te houden als de opbrengst van de verkoop van uw huis lager is dan uw hypotheekschuld.</li>
+</ul>
+<p class="klein">Deze hypotheekberekening wordt u aangeboden door MUNT Hypotheken, Bezuidenhoutseweg 16B, 2594 AV Den Haag. Rentetarieven en normen per ${CONFIG.tariefDatum}. Een rekentool van Blinqx Verzekering &amp; Hypotheek.</p>
+</main>
+<script>setTimeout(function(){window.focus();window.print();},400)<\/script>
+</body></html>`;
+}
+function openRapport(){
+  const w = window.open("", "_blank");
+  if(!w){ $("#popupMelding").textContent = "Het rapport kon niet worden geopend. Sta pop-ups toe voor deze pagina en probeer het opnieuw."; return false; }
+  w.document.open(); w.document.write(rapportHTML()); w.document.close();
+  return true;
+}
+
+/* ============================ Init ============================ */
+function init(){
+  bouwRvp();
+  $$(".tariefDatum").forEach(e=>e.textContent=CONFIG.tariefDatum);
+  $$(".nhgGrens").forEach(e=>e.textContent=eur(CONFIG.nhgKostengrens));
+  $$("input.bedrag").forEach(el=>{
+    const lab=document.querySelector(`label[for="${el.id}"]`);
+    if(lab && !lab.querySelector(".sr-euro")){ const s=document.createElement("span"); s.className="sr-only sr-euro"; s.textContent=" (bedrag in euro)"; const ster=lab.querySelector(".verplicht"); if(ster) lab.insertBefore(s,ster); else lab.appendChild(s); }
+    el.addEventListener("input",()=>{ formatteerVeld(el);
+      if(el.id==="verbouwKosten" && !S.waardeNaHandmatig){ const k=getal($("#vraagprijs")), r=getal(el); zet($("#waardeNa"), r ? k + CONFIG.waardestijgingVerbouwing*r : 0); }
+      if(el.id==="waardeNa") S.waardeNaHandmatig = true;
+      if(el.id==="vraagprijs" && S.verst<2) $("#hoofdsom").value="";
+      if(el.getAttribute("aria-invalid")==="true" && getal(el)) { const f=document.getElementById(el.id+"Fout"); if(f) veldFout(el, document.getElementById(el.id+"Wrap"), f, false); }
+      update(); });
+  });
+  ["#gebDag","#gebMaand","#gebJaar"].forEach(s=>$(s).addEventListener("input",e=>{ e.target.value=e.target.value.replace(/\D/g,""); if(!$("#datumFout").hidden && geboortedatum()) toonDatumFout(false); update(); }));
+  document.addEventListener("change",e=>{ if(e.target.matches("input[type=radio],select")) { S.interactie=true; update(); } });
+  document.addEventListener("input",e=>{ if(e.target.matches("input")) S.interactie=true; }, true);
+  document.addEventListener("click",e=>{ const b=e.target.closest("[data-ga]"); if(b){ e.preventDefault(); gaNaar(+b.dataset.ga); } });
+  $("#pijlTerug").addEventListener("click",()=>gaNaar(S.stap===5?4:S.stap-1));
+  $("#pijlVerder").addEventListener("click",()=>gaNaar(S.stap+1));
+  $("#downloadRapport").addEventListener("click",()=>{ if(openRapport()) toonStap(5); });
+  $("#opnieuwRapport").addEventListener("click",openRapport);
+  // Enter in een invoerveld = verder
+  document.addEventListener("keydown",e=>{ if(e.key==="Enter" && e.target.matches("input:not([type=radio])")){ e.preventDefault(); gaNaar(S.stap+1); } });
+  // Vraagprijs via URL (?vraagprijs=350000), voor koppeling vanuit woningpagina
+  const q = new URLSearchParams(location.search).get("vraagprijs");
+  if(q && /^\d+$/.test(q)) zet($("#vraagprijs"), +q);
+  toonStap(0, true);   // bij laden geen focus verplaatsen: skiplink blijft eerste tabstop
+}
+init();
+</script>
+</body>
+</html>
