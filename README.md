@@ -29,3 +29,12 @@ Gekalibreerd tegen de live rekentool (23-11-2026). Uitkomsten zijn op ~3.000 tes
 - Contrast AA: merkgroen alleen als vlak met donkere tekst, groene tekst in `#006b4c`
 - Foutmeldingen zijn gekoppeld via `aria-describedby`/`aria-invalid`, met herstelknop
 - Responsive vanaf 320px, doelgrootte ≥ 44px, ondersteunt `prefers-reduced-motion`
+
+## Rapport (PDF)
+"Download rapport" opent een A4-document van 19 pagina's in een nieuw venster: het opent automatisch het printvenster, waar je "Opslaan als PDF" kiest. Het ontwerp en de teksten zijn één-op-één overgenomen van het MUNT-rapport:
+- Voorblad en pagina 1–5, 7 en 8 worden opgebouwd met de berekende waarden.
+- Pagina 6 (rekenvoorbeeld € 250.000) en het voorbeeld-renteaanbod (10 pagina's) zijn vaste afbeeldingen uit het origineel (`assets/rapport/`).
+- Lettertypen: Open Sans (zoals het origineel) en Roboto Slab als vervanger van Serifa BT, beide OFL, in `assets/fonts/`.
+
+## Standalone-versie bouwen
+`python3 tools/bouw-standalone.py` maakt `munt-hypotheekberekening-standalone.html`: één bestand van ca. 2 MB, met alle afbeeldingen en lettertypen ingebakken. Draai dit na elke wijziging in `index.html`.

@@ -906,125 +906,329 @@ function toonStap(n, stil){
   document.title = (n===0 ? "" : (n===5 ? "Hoe nu verder – " : `Stap ${Math.min(n,4)} van 4: ${STAPNAMEN[Math.min(n,4)-1]} – `)) + "MUNT Hypotheken – Hypotheekberekening";
 }
 
-/* ============================ Rapport (print via window.open) ============================ */
+/* ============================ Rapport (één-op-één naar MUNT-PDF, print via window.open) ============================ */
+const RAPPORT_ASSETS = {
+  logo: "assets/rapport/munt-logo.png",
+  kubus: "assets/rapport/kubus.png",
+  icoon1: "assets/rapport/icoon-stap1.png",
+  icoon2: "assets/rapport/icoon-stap2.png",
+  icoon3: "assets/rapport/icoon-stap3.png",
+  icoon4: "assets/rapport/icoon-stap4.png",
+  rekenvoorbeeld: "assets/rapport/rekenvoorbeeld.jpg",
+  voorbeeld: ["assets/rapport/voorbeeld-10.jpg","assets/rapport/voorbeeld-11.jpg","assets/rapport/voorbeeld-12.jpg","assets/rapport/voorbeeld-13.jpg","assets/rapport/voorbeeld-14.jpg","assets/rapport/voorbeeld-15.jpg","assets/rapport/voorbeeld-16.jpg","assets/rapport/voorbeeld-17.jpg","assets/rapport/voorbeeld-18.jpg","assets/rapport/voorbeeld-19.jpg"],
+  os300: "assets/fonts/open-sans-latin-300-normal.woff2",
+  os400: "assets/fonts/open-sans-latin-400-normal.woff2",
+  os400i: "assets/fonts/open-sans-latin-400-italic.woff2",
+  os600: "assets/fonts/open-sans-latin-600-normal.woff2",
+  os700: "assets/fonts/open-sans-latin-700-normal.woff2",
+  os700i: "assets/fonts/open-sans-latin-700-italic.woff2",
+  slab700: "assets/fonts/roboto-slab-latin-700-normal.woff2"
+};
+const absUrl = p => new URL(p, location.href).href;
+
 function rapportHTML(){
   update();
   const {k,rvp,rente,sch,mh} = laatste;
+  const A = {}; for(const [n,v] of Object.entries(RAPPORT_ASSETS)) A[n] = Array.isArray(v) ? v.map(absUrl) : absUrl(v);
   const datum = new Date().toLocaleDateString("nl-NL",{day:"numeric",month:"long",year:"numeric"});
-  const nu = new Date();
-  // Jaaroverzicht: eerste maand, daarna steeds dezelfde maand in het volgende jaar
+  const jaar0 = new Date().getFullYear();
+  const pr = n => nf2.format(n) + " %";                       // "4,68 %" zoals in de PDF
+  const lbl = $("#energielabel").value;
+  const ebv = CONFIG.ebv[lbl];
+
+  const voet = n => `<footer class="voet"><span class="lijn"></span><img class="kubus" src="${A.kubus}" alt=""><p><b>Uw berekening</b> | ${datum} | pagina ${n}/8</p></footer>`;
+
+  /* ---------- Kostendiagram (pagina 3) ---------- */
+  // Maten in mm, afgeleid van de MUNT-PDF (A4, 210 × 297 mm)
+  const cx=43.7, cy=62.2, r=21.6, xR=146.0, xBox=150.0, xL=39.9;
+  const posten = [
+    {l:"Verbouwing", w:k.R, y:35.1},
+    {l:"Overdrachtsbelasting", w:k.ovb, y:43.0},
+    {l:"Notariskosten leveringsakte", w:CONFIG.notarisLevering, y:50.9},
+    {l:"Notariskosten hypotheekakte", w:CONFIG.notarisHypotheek, y:70.1},
+    {l:"Taxatiekosten + advieskosten", w:CONFIG.taxatie+CONFIG.advies, y:78.0},
+    {l:"Kosten Nationale Hypotheekgarante (NHG)", w:k.nhgKosten, y:85.9}
+  ];
+  const lijnStart = y => { const dy=Math.abs(y-cy); return dy<r ? cx+Math.sqrt(r*r-dy*dy) : xL; };
+  let svg = `<circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="#cfcfcf" stroke-width=".3"/>`;
+  for(const p of posten){
+    const x0 = lijnStart(p.y);
+    svg += `<line x1="${x0}" y1="${p.y}" x2="${xR}" y2="${p.y}" stroke="#cfcfcf" stroke-width=".3"/>`;
+    if(Math.abs(p.y-cy)>=r){ const yc = cy + Math.sign(p.y-cy)*Math.sqrt(r*r-(xL-cx)*(xL-cx)); svg += `<line x1="${xL}" y1="${p.y}" x2="${xL}" y2="${yc}" stroke="#cfcfcf" stroke-width=".3"/>`; }
+  }
+  svg += `<line x1="${cx+r}" y1="${cy}" x2="${xBox}" y2="${cy}" stroke="#cfcfcf" stroke-width=".3"/>`;
+  svg += `<line x1="${xR}" y1="35.1" x2="${xR}" y2="50.9" stroke="#cfcfcf" stroke-width=".3"/><line x1="${xR}" y1="42.9" x2="${xBox}" y2="42.9" stroke="#cfcfcf" stroke-width=".3"/>`;
+  svg += `<line x1="${xR}" y1="70.1" x2="${xR}" y2="85.9" stroke="#cfcfcf" stroke-width=".3"/><line x1="${xR}" y1="77.4" x2="${xBox}" y2="77.4" stroke="#cfcfcf" stroke-width=".3"/>`;
+  svg += `<line x1="167.6" y1="47.7" x2="167.6" y2="94.0" stroke="#cfcfcf" stroke-width=".3"/>`;
+  svg += `<line x1="167.6" y1="111.3" x2="167.6" y2="118.4" stroke="#cfcfcf" stroke-width=".3"/>`;
+  const postHTML = posten.map(p=>`<div class="post" style="top:${(p.y-3.9).toFixed(1)}mm"><span class="pl">${p.l}</span><span class="pw">${eur(p.w)}</span></div>`).join("");
+
+  /* ---------- Aflostabel (pagina 4) ---------- */
   const rijen=[]; let vorige=null;
   for(let j=0;j<30;j++){
     const m = sch.maanden[j*12];
-    const label = j===0 ? `${nu.getFullYear()} (1e maand)` : String(nu.getFullYear()+j);
-    rijen.push(`<tr><td>${label}</td><td>${eur(m.saldo)}</td><td>${pct(m.rente)}</td><td>${eur(m.rd)}</td><td>${eur(m.afl)}</td><td>${eur(m.termijn)}</td></tr>`);
-    if(vorige && m.rente<vorige.rente){
-      rijen.push(`<tr class="afslag"><td>Afslag</td><td></td><td>▾ -${nf2.format(vorige.rente-m.rente)}%</td><td>▾ ${eur(m.rd-vorige.rd)}</td><td></td><td></td></tr>`);
-    }
+    const verlaagd = vorige && m.rente < vorige.rente - 1e-9;
+    const jl = j===0 ? `${jaar0} (1e maand)` : String(jaar0+j);
+    rijen.push(`<tr class="${verlaagd?"groen":(j%2?"":"grijs")}"><td>${jl}</td><td>${eur(m.saldo)}</td><td>${pr(m.rente)}</td><td>${eur(m.rd)}</td><td>${eur(m.afl)}</td><td>${eur(m.termijn)}</td></tr>`);
+    if(verlaagd) rijen.push(`<tr class="afslag"><td>Afslag</td><td></td><td>▾ -${nf2.format(vorige.rente-m.rente)} %</td><td></td><td></td><td>▾ € ${nf0.format(Math.round(m.rd-vorige.rd))}</td></tr>`);
     vorige=m;
   }
-  const verbouwRegel = k.verbouwen ? `<tr><td>Verbouwing (eigen inbreng)</td><td>${eur(k.eigenInbrengVerbouwing)}</td></tr>` : `<tr><td>Verbouwing</td><td>${eur(0)}</td></tr>`;
+
   return `<!doctype html><html lang="nl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Uw persoonlijke hypotheekberekening – ${datum}</title>
 <style>
-body{font:14px/1.5 "Open Sans","Segoe UI",Arial,sans-serif;color:#1f2a2e;margin:0;padding:24px;max-width:960px;margin:auto}
-h1{font-size:26px;text-transform:uppercase;margin:0}h2{font-size:17px;text-transform:uppercase;border-bottom:3px solid #00d796;padding-bottom:4px;margin:28px 0 10px}
-.kop{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;border-bottom:1px solid #ccc;padding-bottom:12px}
-.kern{display:flex;gap:16px;margin:16px 0}.kern div{flex:1;background:#3d3d3d;color:#fff;padding:12px 16px;border-radius:6px}.kern strong{display:block;font-size:20px}
-table{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}th,td{text-align:left;padding:6px 8px;border-bottom:1px solid #ddd}th{background:#f2f3f1}
-td:not(:first-child),th:not(:first-child){text-align:right}.afslag td{color:#006b4c;font-size:12px;border-bottom:1px dashed #9cd}
-.tot td{font-weight:700;border-top:2px solid #1f2a2e}ol.stappen{display:flex;gap:12px;padding:0;list-style:none;counter-reset:s}ol.stappen li{flex:1;background:#e6fbf4;padding:10px;border-radius:6px}
-ul{padding-left:20px}.klein{font-size:12px;color:#4d5a5f}.knop{position:fixed;right:16px;top:16px;background:#00d796;color:#062a1d;border:0;border-radius:6px;padding:10px 16px;font:inherit;font-weight:700;cursor:pointer}
-.breed{overflow-x:auto}
-@media print{.knop{display:none}body{padding:0}h2{break-after:avoid}.pb{break-before:page}}
+@font-face{font-family:"Open Sans";font-weight:300;font-style:normal;src:url("${A.os300}") format("woff2")}
+@font-face{font-family:"Open Sans";font-weight:400;font-style:normal;src:url("${A.os400}") format("woff2")}
+@font-face{font-family:"Open Sans";font-weight:400;font-style:italic;src:url("${A.os400i}") format("woff2")}
+@font-face{font-family:"Open Sans";font-weight:600;font-style:normal;src:url("${A.os600}") format("woff2")}
+@font-face{font-family:"Open Sans";font-weight:700;font-style:normal;src:url("${A.os700}") format("woff2")}
+@font-face{font-family:"Open Sans";font-weight:700;font-style:italic;src:url("${A.os700i}") format("woff2")}
+@font-face{font-family:"Serifa Vervanger";font-weight:700;src:url("${A.slab700}") format("woff2")}
+@page{size:A4;margin:0}
+:root{--groen:#00d796;--tekst:#3d3d3d;--grijs:#9d9d9d}
+*{box-sizing:border-box}
+html{background:#6b6f70}
+body{margin:0;padding:24px 0 40px;font-family:"Open Sans",Arial,sans-serif;color:var(--tekst);-webkit-print-color-adjust:exact;print-color-adjust:exact}
+.pagina{position:relative;width:210mm;height:297mm;margin:0 auto 24px;background:#fff;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,.35);padding:16mm 22mm 0}
+.pagina.vol{padding:0}
+.pagina.vol img.scan{width:100%;height:100%;display:block}
+h2{font-weight:400;color:var(--groen);font-size:11.5pt;text-transform:uppercase;margin:0 0 2.2mm;letter-spacing:.01em}
+h2 small{font-size:4.6pt;vertical-align:middle}
+p,li{font-size:6.3pt;line-height:1.58;margin:0 0 2.4mm}
+a{color:var(--groen)}
+ul.bol{list-style:none;padding:0;margin:0}
+ul.bol li{position:relative;padding-left:4mm;margin:0 0 1.2mm}
+ul.bol li::before{content:"";position:absolute;left:.4mm;top:1.25mm;width:1.4mm;height:1.4mm;border-radius:50%;background:var(--tekst)}
+.voet{position:absolute;left:0;right:0;top:268mm;height:20mm}
+.voet .lijn{position:absolute;left:34mm;width:141mm;top:6.8mm;border-top:.3mm solid #c8c8c8}
+.voet .kubus{position:absolute;left:176.5mm;top:0;width:8.6mm}
+.voet p{position:absolute;left:0;right:0;top:9.3mm;text-align:center;font-size:5.6pt;margin:0}
+.voet b{color:var(--groen)}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)}
+
+/* Voorblad */
+.voorblad{background:var(--groen);padding:16mm 14mm}
+.voorblad h1{font-family:"Serifa BT","Serifa Vervanger",Rockwell,Georgia,serif;font-weight:700;color:#fff;font-size:22.5pt;line-height:1.36;margin:0;letter-spacing:.01em}
+.voorblad .datum{color:#fff;font-weight:300;font-size:14.5pt;margin:1mm 0 0}
+.voorblad .cirkel{position:absolute;left:63mm;top:70mm;width:84mm;height:84mm;border-radius:50%;background:#fff;overflow:hidden}
+.voorblad .cirkel img{position:absolute;left:18.3mm;top:21.3mm;width:47.2mm}
+.voorblad .band{position:absolute;left:0;right:0;height:5.5mm;color:#fff;font-size:6.6pt;text-align:center;line-height:5.5mm}
+.voorblad .b1{top:68.3mm;background:#d9d0c9}
+.voorblad .b2{top:73.8mm;background:#a1a1a1}
+
+/* Pagina 1 */
+.stappen{display:grid;grid-template-columns:repeat(4,1fr);margin:3.5mm 0 0}
+.stappen div{text-align:center}
+.stappen img{width:21.2mm;height:21.2mm;display:block;margin:0 auto}
+.stappen h3{font-weight:400;color:var(--groen);font-size:11.5pt;margin:1.2mm 0 .6mm}
+.stappen p{font-size:5.9pt;line-height:1.45;margin:0}
+
+/* Pagina 3 */
+.diagram{position:absolute;left:0;top:0;width:210mm;height:140mm}
+.diagram svg{position:absolute;left:0;top:0;width:210mm;height:140mm}
+.diagram .post{position:absolute;left:60mm;width:83mm;text-align:right;font-size:7.9pt;line-height:1.33;color:#1e1e1e}
+.post .pl,.post .pw{display:block}.post .pw{color:var(--groen);padding-top:.3mm}
+.diagram .doos{position:absolute;left:150mm;width:35mm;height:10.4mm;border:.3mm solid #cfcfcf;border-radius:.6mm;background:#fff;text-align:right;padding:1.3mm 1.4mm;font-size:7.9pt;line-height:1.33;white-space:nowrap;color:#1e1e1e}
+.doos span{display:block}.doos .w{color:var(--groen)}
+.diagram .tot{position:absolute;left:150mm;width:35mm;text-align:right;font-size:7.9pt;line-height:1.3;color:#fff;border-radius:.6mm;overflow:hidden;white-space:nowrap}
+.tot .g{background:var(--groen);padding:1.3mm 1.4mm;color:#fff}
+.tot .lb{color:#1e1e1e}
+.tot .f{background:#a1a1a1;padding:.3mm 1.4mm;font-size:9.2pt}
+.tot span{display:block}
+.scheid{border-top:.3mm solid #b5b5b5;margin:0 0 3.6mm}
+.maandlast{background:var(--grijs);border-radius:.8mm;padding:2.6mm 2.6mm 3mm;color:#fff}
+.maandlast table{width:100%;border-collapse:collapse;font-size:5.2pt;margin:0 0 2.6mm}
+.maandlast td{border:.25mm solid #fff;padding:1.1mm 1.3mm;text-align:right}
+.maandlast td:first-child{text-align:left}
+.maandlast ul{margin:0;padding-left:9mm}
+.maandlast li{font-size:5.2pt;line-height:1.5;margin:0 0 1.3mm;color:#fff}
+.maandlast a{color:#fff}
+
+/* Pagina 4 */
+table.verloop{width:100%;border-collapse:collapse;font-size:5.6pt;margin-top:2mm}
+.verloop th{background:#e3e3e3;font-weight:700;text-align:right;padding:1.7mm 1.6mm}
+.verloop td{text-align:right;padding:.62mm 1.6mm;height:3.4mm}
+.verloop th:first-child,.verloop td:first-child{text-align:left}
+.verloop tr.grijs td{background:#ededed}
+.verloop tr.groen td{background:var(--groen);color:#fff}
+.verloop tr.afslag td{background:#a8a8a8;color:#fff;font-weight:700;font-size:4.4pt;padding:.4mm 1.6mm;height:2.6mm}
+.verloop tr.totaal td{background:#e3e3e3;font-weight:700;padding:1.8mm 1.6mm}
+.verloop tr.inv td{background:var(--groen);color:#fff;font-weight:700;padding:1.8mm 1.6mm}
+
+/* Pagina 5 */
+.belangrijk{background:#e9e9e9;border-radius:.8mm;padding:4mm 2.4mm 2.4mm;margin:9mm 0 7mm}
+.belangrijk h3{color:var(--groen);font-size:6.6pt;font-weight:700;margin:0 0 3mm}
+.belangrijk ul{margin:0;padding-left:5mm}
+.belangrijk li{font-style:italic;font-size:6.1pt;margin:0 0 2.2mm}
+
+/* Pagina 6 */
+.rekenvoorbeeld{display:block;width:166mm;margin:0}
+
+/* Pagina 7 */
+.advies{background:var(--groen);color:#fff;text-align:center;padding:5mm 8mm 3.4mm;margin-top:8mm}
+.advies h3{font-weight:300;font-size:12pt;margin:0 0 4mm}
+.advies p{font-weight:700;font-size:6.6pt;margin:0 auto 2.6mm;max-width:150mm}
+.advies a{color:#fff}
+
+.knop{position:fixed;right:16px;top:16px;z-index:9;background:#00d796;color:#062a1d;border:0;border-radius:6px;padding:10px 16px;font:700 14px "Open Sans",Arial,sans-serif;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.3)}
+.knop:focus-visible{outline:3px solid #1d3459;outline-offset:2px}
+@media print{html{background:#fff}body{padding:0}.knop{display:none}.pagina{margin:0;box-shadow:none;break-after:page}}
 </style></head><body>
 <button class="knop" onclick="window.print()">Afdrukken / opslaan als PDF</button>
 <main>
-<div class="kop"><div><h1>Uw persoonlijke hypotheekberekening</h1><div>${datum}</div></div><div><strong>MUNT</strong> HYPOTHEKEN</div></div>
-<div class="kern"><div>Hypotheekbedrag<strong>${eur(k.teFinancieren)}</strong></div><div>Bruto maandlast<strong>${eur(sch.eerste)}</strong></div></div>
 
-<h2>Wat moet u doen?</h2>
-<ol class="stappen"><li><strong>Stap 1</strong><br>Lees uw hypotheekberekening rustig door</li><li><strong>Stap 2</strong><br>Neem deze mee naar uw hypotheekadviseur</li><li><strong>Stap 3</strong><br>Vraag samen met uw hypotheekadviseur het renteaanbod aan</li><li><strong>Stap 4</strong><br>Een stap dichterbij uw droomwoning</li></ol>
+<section class="pagina voorblad" aria-label="Voorblad">
+  <h1>UW PERSOONLIJKE<br>HYPOTHEEKBEREKENING</h1>
+  <p class="datum">${datum}</p>
+  <div class="cirkel">
+    <img src="${A.logo}" alt="MUNT Hypotheken">
+    <div class="band b1">Hypotheekbedrag: ${eur(k.teFinancieren)}</div>
+    <div class="band b2">Bruto maandlast: ${eur(sch.eerste)}</div>
+  </div>
+</section>
 
-<h2>Wat is dit voor document?</h2>
-<p>Na het invoeren van uw gegevens weet u hoe uw persoonlijke renteaanbod eruit zou kunnen zien, als u deze samen met uw adviseur bij MUNT Hypotheken zou aanvragen. Wij proberen de zaken hiermee zo simpel mogelijk te maken. Maar hypotheken zijn natuurlijk toch een beetje ingewikkeld. Het gaat over veel geld en een langjarige verplichting. Daarom adviseren wij om u bij het afsluiten van een hypotheek te laten bijstaan door een onafhankelijke adviseur.</p>
-<p>U kunt aan dit document geen rechten ontlenen, het is nadrukkelijk geen uitnodiging om met ons een overeenkomst aan te gaan. Dat klinkt onaardig, maar wij vinden het verstandig als u eerst met een adviseur overlegt.</p>
-<p>Wij hebben de door u opgegeven gegevens uitsluitend gebruikt voor het maken van deze hypotheekberekening. Wij hebben deze gegevens niet opgeslagen. Daardoor weten wij op dit moment niets van u en kunnen wij dus ook geen "echt" renteaanbod voor u maken. Later, wanneer u meer gegevens aan ons heeft doorgegeven, doen we dat natuurlijk graag!</p>
-<p>Het afsluiten van een hypotheek is een serieuze aangelegenheid. Wij zullen u vragen om veel papieren aan te leveren en zullen diverse controles doen. Aan de andere kant, een hypotheek is een lening voor uw huis, niet meer en niet minder. Wij proberen het zo simpel mogelijk te maken en wij zijn ervan overtuigd dat uw adviseur u kan helpen bij het maken van de juiste keuzes.</p>
+<section class="pagina" aria-label="Pagina 1">
+  <h2>Wat moet u doen?</h2>
+  <div class="stappen">
+    <div><img src="${A.icoon1}" alt=""><h3>Stap 1</h3><p>Lees uw hypotheek-<br>berekening rustig door</p></div>
+    <div><img src="${A.icoon2}" alt=""><h3>Stap 2</h3><p>Neem deze mee naar uw<br>hypotheekadviseur</p></div>
+    <div><img src="${A.icoon3}" alt=""><h3>Stap 3</h3><p>Vraag samen met uw hypotheekadviseur<br>het renteaanbod aan</p></div>
+    <div><img src="${A.icoon4}" alt=""><h3>Stap 4</h3><p>Een stap dichterbij uw<br>droomwoning</p></div>
+  </div>
+  <h2 style="margin-top:17.5mm">Wat is dit voor document?</h2>
+  <p>Na het invoeren van uw gegevens weet u hoe uw persoonlijke renteaanbod eruit zou kunnen zien, als u deze samen met uw adviseur bij MUNT Hypotheken zou aanvragen. Wij proberen de zaken hiermee zo simpel mogelijk te maken. Maar hypotheken zijn natuurlijk toch een beetje ingewikkeld. Het gaat over veel geld en een langjarige verplichting. Daarom adviseren wij om u bij het afsluiten van een hypotheek te laten bijstaan door een onafhankelijke adviseur.</p>
+  <p>U kunt aan dit document geen rechten ontlenen, het is nadrukkelijk geen uitnodiging om met ons een overeenkomst aan te gaan. Dat klinkt onaardig, maar wij vinden het verstandig als u eerst met een adviseur overlegt.</p>
+  <p>Wij hebben de door u opgegeven gegevens uitsluitend gebruikt voor het maken van deze hypotheekberekening. Wij hebben deze gegevens niet opgeslagen. Daardoor weten wij op dit moment niets van u en kunnen wij dus ook geen "echt" renteaanbod voor u maken. Later, wanneer u meer gegevens aan ons heeft doorgegeven, doen we dat natuurlijk graag!</p>
+  <p>Het afsluiten van een hypotheek is een serieuze aangelegenheid. Wij zullen u vragen om veel papieren aan te leveren en zullen diverse controles doen. Aan de andere kant, een hypotheek is een lening voor uw huis, niet meer en niet minder. Wij proberen het zo simpel mogelijk te maken en wij zijn er van overtuigd dat uw adviseur u kan helpen bij het maken van de juiste keuzes.</p>
+  ${voet(1)}
+</section>
 
-<h2>De voordelen van een MUNT Hypotheek</h2>
-<ul>
-<li>U mag bij MUNT Hypotheken altijd extra aflossen. Dat mag onbeperkt en is zonder kosten als u aflost met uw eigen geld.</li>
-<li>Het rentepercentage dat u betaalt, bepalen wij aan de hand van de hoogte van uw hypotheek en de waarde van uw woning. Als u voldoende heeft afgelost, gaat u automatisch minder rente betalen. Hierdoor betaalt u over de looptijd veel minder rente.</li>
-<li>Is de rente voor soortgelijke geldleningen van MUNT op de dag dat uw hypotheekakte passeert lager dan de rente in het aanbod? Dan krijgt u die lagere rente. U profiteert daardoor van een daling van de tarieven van MUNT Hypotheken tot het moment dat uw hypotheekakte bij de notaris passeert. Als de rente op de dag van passeren hoger is, betaalt u nooit meer dan in uw renteaanbod staat vermeld.</li>
-<li>MUNT Hypotheken biedt uitsluitend hypotheken aan. U heeft daardoor geen verplichting om bijvoorbeeld een nieuwe betaalrekening te openen of andere producten af te nemen.</li>
-<li>U bent helemaal vrij in de keuze waar u een eventuele overlijdensrisicoverzekering wilt afsluiten. Zo kunt u altijd de voor u meest voordelige keuze maken.</li>
-<li>MUNT Hypotheken is een betrouwbare aanbieder met funding door oerdegelijke, Nederlandse pensioenfondsen.</li>
-<li>De actuele hypotheekrentetarieven kunt u vinden op www.munthypotheken.nl/renteoverzicht.</li>
-<li>Voor vragen: kijk op www.munthypotheken.nl of praat met uw adviseur.</li>
-</ul>
+<section class="pagina" aria-label="Pagina 2">
+  <h2>De voordelen van een MUNT Hypotheek:</h2>
+  <ul class="bol">
+    <li>U mag bij MUNT Hypotheken altijd extra aflossen. Dat mag onbeperkt en is zonder kosten als u aflost met uw eigen geld.</li>
+    <li>Het rentepercentage dat u betaalt, bepalen wij aan de hand van de hoogte van uw hypotheek en de waarde van uw woning. Als u voldoende heeft afgelost, gaat u automatisch minder rente betalen. Hierdoor betaalt u over de looptijd veel minder rente.</li>
+    <li>Is de rente voor soortgelijke geldleningen van MUNT op de dag dat uw hypotheekakte passeert lager dan de rente in het aanbod? Dan krijgt u die lagere rente.U profiteert daardoor van een daling van de tarieven van MUNT Hypotheken tot het moment dat uw hypotheekakte bij de notaris passeert. Als de rente op de dag van passeren hoger is, betaalt u nooit meer dan in uw renteaanbod staat vermeld.</li>
+    <li>MUNT Hypotheken biedt uitsluitend hypotheken aan. U heeft daardoor geen verplichting om bijvoorbeeld een nieuwe betaalrekening te openen of andere producten af te nemen.</li>
+    <li>U bent helemaal vrij in de keuze waar u een eventuele overlijdensrisicoverzekering wilt afsluiten. Zo kunt u altijd de voor u meest voordelige keuze maken.</li>
+    <li>MUNT Hypotheken is een betrouwbare aanbieder met funding door oerdegelijke, Nederlandse pensioenfondsen.</li>
+    <li>De actuele hypotheekrentetarieven kunt u vinden op <a href="https://www.munthypotheken.nl/renteoverzicht">www.munthypotheken.nl/renteoverzicht</a>.</li>
+    <li>Voor vragen; kijk op <a href="https://www.munthypotheken.nl">www.munthypotheken.nl</a> of praat met uw adviseur.</li>
+  </ul>
+  ${voet(2)}
+</section>
 
-<h2 class="pb">Totale kosten aankoop woning (indicatie)</h2>
-<table><tbody>
-${verbouwRegel}
-<tr><td>Overdrachtsbelasting</td><td>${eur(k.ovb)}</td></tr>
-<tr><td>Notariskosten leveringsakte</td><td>${eur(CONFIG.notarisLevering)}</td></tr>
-<tr class="tot"><td>Kosten aankoop woning</td><td>${eur(k.aankoop)}</td></tr>
-<tr><td>Koopsom</td><td>${eur(k.prijs)}</td></tr>
-<tr><td>Notariskosten hypotheekakte</td><td>${eur(CONFIG.notarisHypotheek)}</td></tr>
-<tr><td>Taxatiekosten + advieskosten</td><td>${eur(CONFIG.taxatie+CONFIG.advies)}</td></tr>
-<tr><td>Kosten Nationale Hypotheek Garantie (NHG)</td><td>${eur(k.nhgKosten)}</td></tr>
-<tr class="tot"><td>Hypotheekkosten</td><td>${eur(k.hypKosten)}</td></tr>
-<tr class="tot"><td>Totale kosten</td><td>${eur(k.totaal)}</td></tr>
-<tr><td>Aftrek eigen geld</td><td>${eur(k.totaal-k.teFinancieren)}</td></tr>
-<tr class="tot"><td>Te financieren</td><td>${eur(k.teFinancieren)}</td></tr>
-${mh ? `<tr><td>Financieel haalbaar</td><td>${eur(mh.max,2)}</td></tr>` : ""}
-${CONFIG.ebv[$("#energielabel").value] ? `<tr><td>Extra ruimte voor EBV</td><td>${eur(CONFIG.ebv[$("#energielabel").value])}</td></tr>` : ""}
-</tbody></table>
+<section class="pagina" aria-label="Pagina 3">
+  <h2>Totale kosten aankoop woning <small>(INDICATIE)</small></h2>
+  <div class="diagram">
+    <svg viewBox="0 0 210 140" aria-hidden="true">${svg}</svg>
+    ${postHTML}
+    <div class="doos" style="top:37.3mm"><span>Kosten aankoop woning</span><span class="w">${eur(k.aankoop)}</span></div>
+    <div class="doos" style="top:54.9mm"><span>Koopsom</span><span class="w">${eur(k.prijs)}</span></div>
+    <div class="doos" style="top:72.1mm"><span>Hypotheekkosten</span><span class="w">${eur(k.hypKosten)}</span></div>
+    <div class="tot" style="top:94.0mm"><div class="g"><span class="lb">Totale kosten</span><span>${eur(k.totaal)}</span><span><span class="sr">Aftrek eigen geld: </span>${eur(k.totaal-k.teFinancieren)}</span></div><div class="f"><span class="sr">Te financieren: </span>${eur(k.teFinancieren)}</div></div>
+    ${mh ? `<div class="tot" style="top:118.4mm"><div class="g"><span class="lb">Financieel haalbaar</span><span>${eur(mh.max,2)}</span>${ebv?`<span class="lb">Extra ruimte voor EBV</span><span>${eur(ebv)}</span>`:""}</div></div>` : ""}
+  </div>
+  <div style="position:absolute;left:22mm;right:22mm;top:146.8mm">
+  <div class="scheid"></div>
+  <h2 style="margin-bottom:.8mm">Uw maandlast <small>(INDICATIE)</small></h2>
+  <div class="maandlast">
+    <table>
+      <tr><td>Totale lening</td><td>Vaste rente</td><td>Jaarlijkse kosten percentage</td><td>Bruto maandbedrag</td><td>Looptijd van de lening</td><td>Totaal bedrag</td></tr>
+      <tr><td>${eur(k.teFinancieren)}</td><td>${pr(rente)}</td><td>${pr(r2(effectief(rente)))}</td><td>${eur(sch.eerste,2)}</td><td>360 maanden</td><td>${eur(sch.totaal,2)}</td></tr>
+    </table>
+    <ul>
+      <li>Dit betreft een annuïteitenhypotheek met een rentevasteperiode van ${rvp} jaar waarbij de aanname is gedaan dat de rente gedurende de looptijd van 360 maanden vast staat.</li>
+      <li>De getoonde maandlast is de bruto maandlast. Hoogstwaarschijnlijk heeft u recht op hypotheekrenteaftrek. Uw hypotheekadviseur kan voor u de netto maandlasten berekenen.</li>
+      <li>Notariskosten, taxatiekosten en advieskosten die we gebruiken in deze voorbeeldberekening zijn gemiddelden. De daadwerkelijke kosten kunnen hiervan afwijken. Daarom zijn deze bij de bepaling van het jaarlijks kostenpercentage (JKP) niet meegenomen. De JKP bestaat uitsluitend uit de effectieve rente die u aan MUNT Hypotheken zou betalen, als u een hypotheek bij ons zou krijgen.</li>
+      <li>De extra ruimte voor EBV is alleen te gebruiken voor één of meer van de goedgekeurde energiebesparende maatregelen. Welke dit zijn, vindt u op <a href="https://www.munthypotheken.nl/duurzaamheid/mijn-woning-verduurzamen/">www.munthypotheken.nl/duurzaamheid/mijn-woning-verduurzamen/</a>. De maandelijkse lasten voor rente en terugbetaling EBV zijn in de maandlasten berekening niet meegenomen.</li>
+    </ul>
+  </div>
+  </div>
+  ${voet(3)}
+</section>
 
-<h2>Uw maandlast (indicatie)</h2>
-<div class="breed" tabindex="0" role="region" aria-label="Uw maandlast, scrollbare tabel"><table><thead><tr><th>Totale lening</th><th>Vaste rente</th><th>Jaarlijks kostenpercentage</th><th>Bruto maandbedrag</th><th>Looptijd van de lening</th><th>Totaalbedrag</th></tr></thead>
-<tbody><tr><td>${eur(k.teFinancieren)}</td><td>${pct(rente)}</td><td>${pct(r2(effectief(rente)))}</td><td>${eur(sch.eerste,2)}</td><td>360 maanden</td><td>${eur(sch.totaal,2)}</td></tr></tbody></table></div>
-<p class="klein">Dit betreft een annuïteitenhypotheek met een rentevaste periode van ${rvp} jaar waarbij de aanname is gedaan dat de rente gedurende de looptijd van 360 maanden vast staat. De getoonde maandlast is de bruto maandlast. Hoogstwaarschijnlijk heeft u recht op hypotheekrenteaftrek. Uw hypotheekadviseur kan voor u de netto maandlasten berekenen.</p>
-<p class="klein">Notariskosten, taxatiekosten en advieskosten die we gebruiken in deze voorbeeldberekening zijn gemiddelden. De daadwerkelijke kosten kunnen hiervan afwijken. Daarom zijn deze bij de bepaling van het jaarlijks kostenpercentage (JKP) niet meegenomen. Het JKP bestaat uitsluitend uit de effectieve rente die u aan MUNT Hypotheken zou betalen, als u een hypotheek bij ons zou krijgen.</p>
-<p class="klein">De extra ruimte voor EBV is alleen te gebruiken voor één of meer van de goedgekeurde energiebesparende maatregelen. Welke dit zijn, vindt u op www.munthypotheken.nl/duurzaamheid/mijn-woning-verduurzamen/. De maandelijkse lasten voor rente en terugbetaling EBV zijn in de maandlastenberekening niet meegenomen.</p>
+<section class="pagina" aria-label="Pagina 4">
+  <h2 style="margin-bottom:.6mm">Verloop restschuld en maandlasten <small>(INDICATIE)</small></h2>
+  <p>Hoeveel betaalt u eigenlijk aan rente en aflossing per maand tijdens de looptijd van uw hypotheek?</p>
+  <ul class="bol" style="margin-left:2mm">
+    <li>Dit betreft een annuïteitenhypotheek met een rentevasteperiode van ${rvp} jaar, waarbij de aanname is gedaan dat de rente gedurende de looptijd van 360 maanden vast staat.</li>
+    <li>Natuurlijk dient dit overzicht alleen als indicatie en zijn de getallen daarin alleen van toepassing als er de komende 30 jaar niets verandert. Dat komt niet zo heel vaak voor.</li>
+  </ul>
+  <table class="verloop">
+    <thead><tr><th scope="col">Jaar</th><th scope="col">Schuldrest</th><th scope="col">Rente</th><th scope="col">Rentelast</th><th scope="col">Aflossing</th><th scope="col">Bruto maandlast</th></tr></thead>
+    <tbody>${rijen.join("")}
+      <tr class="totaal"><td>Totaal</td><td></td><td></td><td>${eur(sch.totRente,2)}</td><td>${eur(k.teFinancieren)}</td><td>${eur(sch.totaal,2)}</td></tr>
+      <tr class="inv"><td>Totale investering</td><td></td><td></td><td></td><td></td><td>${eur(sch.totaal,2)}</td></tr>
+    </tbody>
+  </table>
+  ${voet(4)}
+</section>
 
-<h2 class="pb">Verloop restschuld en maandlasten (indicatie)</h2>
-<p>Hoeveel betaalt u eigenlijk aan rente en aflossing per maand tijdens de looptijd van uw hypotheek?</p>
-<p class="klein">Dit betreft een annuïteitenhypotheek met een rentevaste periode van ${rvp} jaar, waarbij de aanname is gedaan dat de rente gedurende de looptijd van 360 maanden vast staat. Natuurlijk dient dit overzicht alleen als indicatie en zijn de getallen daarin alleen van toepassing als er de komende 30 jaar niets verandert. Dat komt niet zo heel vaak voor.</p>
-<div class="breed" tabindex="0" role="region" aria-label="Verloop restschuld, scrollbare tabel"><table><thead><tr><th>Jaar</th><th>Schuldrest</th><th>Rente</th><th>Rentelast</th><th>Aflossing</th><th>Bruto maandlast</th></tr></thead>
-<tbody>${rijen.join("")}
-<tr class="tot"><td>Totaal</td><td></td><td></td><td>${eur(sch.totRente,2)}</td><td>${eur(k.teFinancieren)}</td><td>${eur(sch.totaal,2)}</td></tr>
-</tbody></table></div>
-<p><strong>Totale investering: ${eur(sch.totaal,2)}</strong></p>
+<section class="pagina" aria-label="Pagina 5">
+  <h2>Toelichting verloop restschuld en maandlasten</h2>
+  <p>De hypotheekvorm waarvoor u heeft gekozen is een annuïteitenhypotheek. Een annuïteitenhypotheek is een lening voor een huis, die u in maximaal dertig jaar aflost door maandelijks hetzelfde bedrag te betalen. Het maandbedrag bestaat uit een deel rente en een deel aflossing. De verhouding tussen die twee verandert ongemerkt elke maand een beetje. De eerste jaren betaalt u vooral rente, later gaat u meer aflossen. Het rentedeel wordt dus jaarlijks kleiner. Dat betekent dat de nettolasten van uw hypotheek langzaam stijgen.</p>
+  <p>Hoe meer u leent ten opzichte van de waarde van uw huis, des te groter is het risico. Voor dit risico rekenen hypotheekaanbieders een zogenaamde rente-opslag. Deze opslag is al verwerkt in onze rentes. Onderzoek van de Consumentenbond toont aan dat veel hypotheekaanbieders de rente-opslag niet automatisch aanpassen. U moet bij deze aanbieders zelf actie ondernemen en een verzoek indienen om de risico-opslag te verlagen. In de praktijk blijken klanten dat te vergeten of te laat te doen. Bij een aantal hypotheekaanbieders kan de risico-opslag pas worden aangepast aan het einde van de rentevasteperiode. Deze aanbieders zijn vaak niet proactief in het communiceren van deze mogelijkheid. Ook bij deze aanbieders betaalt u daardoor al snel een te hoge rente.</p>
+  <p>Bij MUNT Hypotheken passen wij de rente-opslag automatisch aan als u aflost op uw hypotheek. Een opslag wordt aangepast of vervalt soms zelf helemaal als de verhouding van de totale hypotheek ten opzichte van de waarde van het huis daalt tot onder een van de opslaggrenzen. Hierdoor betaalt u over de looptijd van uw hypotheek veel minder rente. In het overzicht met het verloop van de maandlast hebben wij deze korting voor u doorgerekend.</p>
+  <div class="belangrijk">
+    <h3>BELANGRIJK OM TE WETEN:</h3>
+    <ul>
+      <li>Er wordt 30 jaar gerekend met het rentepercentage van de gekozen rentevasteperiode, ook al is dat geen 30 jaar vast.</li>
+      <li>Gedurende de gekozen rentevasteperiode is de bruto maandlast voor deze hypotheek gebaseerd op de schuldrest ten opzichte van de waarde van het onderpand. Hierbij hebben wij <b>geen</b> rekening gehouden met een aanname voor wat betreft de premie van een eventuele overlijdensrisicoverzekering</li>
+      <li>Hypotheekrente is veelal aftrekbaar voor de inkomstenbelasting. Hierdoor zullen de werkelijke (netto) maandlasten lager uitkomen. Ga naar uw adviseur voor een overzicht op maat.</li>
+    </ul>
+  </div>
+  <h2>Altijd het juiste tarief</h2>
+  <p>Wat het automatisch laten vervallen van de rente-opslagen betekent laten we u graag zien aan de hand van een rekenvoorbeeld. Bij een hypotheek van € 250.000 en een rentevasteperiode van 10 jaar met een rente van 2,95% kan dat een besparing van maar liefst 17% opleveren!</p>
+  ${voet(5)}
+</section>
 
-<h2>Toelichting verloop restschuld en maandlasten</h2>
-<p>De hypotheekvorm waarvoor u heeft gekozen is een annuïteitenhypotheek. Een annuïteitenhypotheek is een lening voor een huis, die u in maximaal dertig jaar aflost door maandelijks hetzelfde bedrag te betalen. Het maandbedrag bestaat uit een deel rente en een deel aflossing. De verhouding tussen die twee verandert ongemerkt elke maand een beetje. De eerste jaren betaalt u vooral rente, later gaat u meer aflossen. Het rentedeel wordt dus jaarlijks kleiner. Dat betekent dat de nettolasten van uw hypotheek langzaam stijgen.</p>
-<p>Hoe meer u leent ten opzichte van de waarde van uw huis, des te groter is het risico. Voor dit risico rekenen hypotheekaanbieders een zogenaamde renteopslag. Deze opslag is al verwerkt in onze rentes. Bij MUNT Hypotheken passen wij de renteopslag automatisch aan als u aflost op uw hypotheek. Een opslag wordt aangepast of vervalt soms zelfs helemaal als de verhouding van de totale hypotheek ten opzichte van de waarde van het huis daalt tot onder een van de opslaggrenzen. Hierdoor betaalt u over de looptijd van uw hypotheek veel minder rente. In het overzicht met het verloop van de maandlast hebben wij deze korting voor u doorgerekend.</p>
-<p><strong>Belangrijk om te weten:</strong></p>
-<ul>
-<li>Er wordt 30 jaar gerekend met het rentepercentage van de gekozen rentevaste periode, ook al is dat geen 30 jaar vast.</li>
-<li>Gedurende de gekozen rentevaste periode is de bruto maandlast voor deze hypotheek gebaseerd op de schuldrest ten opzichte van de waarde van het onderpand. Hierbij hebben wij geen rekening gehouden met een aanname voor wat betreft de premie van een eventuele overlijdensrisicoverzekering.</li>
-<li>Hypotheekrente is veelal aftrekbaar voor de inkomstenbelasting. Hierdoor zullen de werkelijke (netto) maandlasten lager uitkomen. Ga naar uw adviseur voor een overzicht op maat.</li>
-</ul>
+<section class="pagina" aria-label="Pagina 6">
+  <img class="rekenvoorbeeld" src="${A.rekenvoorbeeld}" alt="Rekenvoorbeeld annuïteitenhypotheek van € 250.000, 10 jaar vast, 3,10% rente, JKP 3,20%, maandbedrag € 1.068, looptijd 360 maanden, totaalbedrag € 384.314. Alle rentebetalingen opgeteld: MUNT Hypotheken € 108.164, gemiddelde van de grootste drie aanbieders van Nederland € 134.314. Mede door het automatisch laten vervallen van de rente-opslag kan het rentevoordeel bij MUNT Hypotheken ten opzichte andere aanbieders oplopen tot maar liefst € 26.185.">
+  ${voet(6)}
+</section>
 
-<h2>Ons advies: laat u adviseren</h2>
-<p>Goed hypotheekadvies is goud waard. Laat u daarom adviseren door een onafhankelijke hypotheekadviseur. Grote kans dat die u een MUNT Hypotheek aanraadt, omdat die het best bij u past.</p>
-<p>Zoek een adviseur bij u in de buurt op: https://www.munthypotheken.nl/vind-een-adviseur/</p>
+<section class="pagina" aria-label="Pagina 7">
+  <h2>Het uiteindelijke renteaanbod</h2>
+  <p>Op de volgende pagina treft u aan hoe een renteaanbod er uit zou kunnen komen te zien indeien u in overleg met uw adviseur uiteindelijk een renteaanbod bij MUNT Hypotheek zou aanvragen. Alhoewel MUNT Hypotheken altijd alles zo simpel mogelijk wil maken ontkomen we er niet aan dat een dergelijk document toch altijd een beetje ingewikkeld is. Daarom kunt u het vast rustig bekijken en de vragen die u heeft met uw adviseur bespreken.</p>
+  <div class="advies">
+    <h3>ONS ADVIES, LAAT U ADVISEREN</h3>
+    <p>Goed hypotheekadvies is goud waard. Laat u daarom adviseren door een onafhankelijke hypotheekadviseur. Grote kans dat die u een MUNT Hypotheek aanraadt, omdat die het best bij u past.</p>
+    <p>Zoek een adviseur bij u in de buurt op:<br><a href="https://www.munthypotheken.nl/vind-een-adviseur/">https://www.munthypotheken.nl/vind-een-adviseur/</a></p>
+  </div>
+  ${voet(7)}
+</section>
 
-<h2>Waar u rekening mee moet houden</h2>
-<p>Als u een hypotheek hebt, loopt u verschillende betalingsrisico's. Zoals een schuld die overblijft als uw huis verkocht wordt of woonlasten die niet meer passen bij uw inkomen. De betaalbaarheid van uw hypotheek kan minder worden door allerlei factoren:</p>
-<ul>
-<li>De woonlasten kunnen stijgen door bijvoorbeeld een verhoging van het rentepercentage.</li>
-<li>Het kan moeilijk worden uw hypotheeklasten te betalen als uw overige uitgaven stijgen door bijvoorbeeld ziekte, gezinsuitbreiding of overheidsmaatregelen.</li>
-<li>Uw inkomen kan dalen. Als u bijvoorbeeld minder gaat werken of als u van baan verandert.</li>
-<li>U loopt het risico een schuld over te houden als de opbrengst van de verkoop van uw huis lager is dan uw hypotheekschuld.</li>
-</ul>
-<p class="klein">Deze hypotheekberekening wordt u aangeboden door MUNT Hypotheken, Bezuidenhoutseweg 16B, 2594 AV Den Haag. Rentetarieven en normen per ${CONFIG.tariefDatum}. Een rekentool van Blinqx Verzekering &amp; Hypotheek.</p>
+<section class="pagina" aria-label="Pagina 8">
+  <h2>Waar u rekening mee moet houden</h2>
+  <p>Als u een hypotheek hebt, loopt u verschillende betalingsrisico's. Zoals een schuld die overblijft als uw huis verkoopt of woonlasten die niet meer passen bij uw inkomen. de betaalbaarheid van uw hypotheek kan minder worden door allerlei factoren:</p>
+  <ul class="bol">
+    <li style="margin-bottom:3mm">De woonlasten kunnen stijgen door bijvoorbeeld een verhoging van het rentepercentage.</li>
+    <li style="margin-bottom:3mm">Het kan moeilijk worden uw hypotheeklasten te betalen als uw overige uitgaven stijgen door bijvoorbeeld ziekte, gezinsuitbreiding of overheidsmaatregelen.</li>
+    <li style="margin-bottom:3mm">Uw inkomen kan dalen. Als u bijvoorbeeld minder gaat werken of als u van baan verandert.</li>
+    <li style="margin-bottom:3mm">U loopt het risico een schuld over te houden als de opbrengst van de verkoop van uw huis lager is dan uw hypotheekschuld.</li>
+  </ul>
+  <p>Deze hypotheekberekening wordt u aangeboden door MUNT Hypotheken, Bezuidenhoutseweg 16B, 2594 AV Den Haag.</p>
+  ${voet(8)}
+</section>
+
+${A.voorbeeld.map((src,i)=>`<section class="pagina vol" aria-label="Voorbeeld renteaanbod, pagina ${i+1}"><img class="scan" src="${src}" alt="${i===0?"Voorbeeld: het renteaanbod van MUNT Hypotheken":"Voorbeeld renteaanbod, pagina "+i+" van 8"}"></section>`).join("\n")}
+
 </main>
-<script>setTimeout(function(){window.focus();window.print();},400)<\/script>
+<script>
+(function(){
+  function schaal(){ var mm=96/25.4, w=210*mm+16, z=Math.min(1,(window.innerWidth)/w); document.querySelectorAll(".pagina").forEach(function(p){p.style.zoom=z;}); }
+  schaal(); window.addEventListener("resize",schaal);
+  window.addEventListener("beforeprint",function(){document.querySelectorAll(".pagina").forEach(function(p){p.style.zoom=1;});});
+  window.addEventListener("afterprint",schaal);
+  var imgs=[].slice.call(document.images), klaar=0;
+  function start(){ (document.fonts?document.fonts.ready:Promise.resolve()).then(function(){ setTimeout(function(){window.focus();window.print();},300); }); }
+  if(!imgs.length) start(); else imgs.forEach(function(i){ if(i.complete){ if(++klaar===imgs.length) start(); } else { i.onload=i.onerror=function(){ if(++klaar===imgs.length) start(); }; } });
+})();
+<\/script>
 </body></html>`;
 }
+
 function openRapport(){
   const w = window.open("", "_blank");
   if(!w){ $("#popupMelding").textContent = "Het rapport kon niet worden geopend. Sta pop-ups toe voor deze pagina en probeer het opnieuw."; return false; }
