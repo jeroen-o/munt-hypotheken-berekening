@@ -35,6 +35,7 @@ Gekalibreerd tegen de live rekentool (23-11-2026). Uitkomsten zijn op ~3.000 tes
 - Voorblad en pagina 1–5, 7 en 8 worden opgebouwd met de berekende waarden.
 - Pagina 6 (rekenvoorbeeld € 250.000) en het voorbeeld-renteaanbod (10 pagina's) zijn vaste afbeeldingen uit het origineel (`assets/rapport/`).
 - Lettertypen: Open Sans (zoals het origineel) en Roboto Slab als vervanger van Serifa BT, beide OFL, in `assets/fonts/`.
+- **Kleuren:** standaard staat de AA-variant aan (`CONFIG.rapportStijl: "aa"`). Dat is hetzelfde ontwerp in donkerdere tinten: MUNT-groen `#007552` en grijs `#6b6f71`. Alle tekst haalt WCAG 2.1 AA-contrast (minimaal 4,5:1). Pagina 6 is in deze variant nagebouwd in HTML/SVG in plaats van een afbeelding met tekst. Met `rapportStijl: "origineel"` krijg je de kleuren één-op-één als de MUNT-PDF; die haalt AA niet.
 
 ## Standalone-versie bouwen
 `python3 tools/bouw-standalone.py` maakt `munt-hypotheekberekening-standalone.html`: één bestand van ca. 2 MB, met alle afbeeldingen en lettertypen ingebakken. Draai dit na elke wijziging in `index.html`.
