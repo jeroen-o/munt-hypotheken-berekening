@@ -23,6 +23,12 @@ Gekalibreerd tegen de live rekentool (23-11-2026). Uitkomsten zijn op ~3.000 tes
 
 **Tarieven bijwerken:** pas `CONFIG.rentes` en `CONFIG.tariefDatum` aan, bovenaan het script in `index.html`.
 
+## Hoog contrast
+Rechtsboven staat een schakelaar met het toegankelijkheidsicoon, net als op munthypotheken.nl. Daarmee zet je een hoog-contrastthema aan: zwart-wit, donkergroen `#004d36` en dikkere randen en focusringen. Alle tekst haalt dan minimaal 9:1 (AAA).
+- De schakelaar is een `role="switch"`, met toetsenbord te bedienen, en een schermlezer meldt "Hoog contrast staat aan/uit".
+- Hij staat automatisch aan als het systeem om meer contrast vraagt (`prefers-contrast: more`), of via `?contrast=hoog` in de URL.
+- De keuze wordt niet opgeslagen (geen localStorage, zodat de tool in Google Sites kan worden ingebed).
+
 ## Toegankelijkheid (WCAG 2.1 AA)
 - Alles bedienbaar met het toetsenbord: echte radio-knoppen, `<details>` in plaats van tooltips, geen enkelcijferige datumvakjes
 - Focus springt naar de kop van de stap. De voortgang staat in een `<ol>` met `aria-current`

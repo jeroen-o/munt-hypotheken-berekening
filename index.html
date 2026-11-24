@@ -177,6 +177,61 @@ dialog{border:0;border-radius:10px;padding:24px;max-width:420px;width:calc(100% 
 dialog::backdrop{background:rgba(0,0,0,.45)}
 
 /* ---------- Responsief ---------- */
+
+/* ---------- Schakelaar hoog contrast ---------- */
+.topbalk{background:#fff;border-bottom:1px solid #e3e5e2}
+.topbalk .wrap{display:flex;justify-content:flex-end;padding-top:6px;padding-bottom:6px}
+.hc-knop{display:inline-flex;align-items:center;gap:8px;min-height:44px;min-width:44px;padding:4px 6px;background:none;border:0;border-radius:var(--radius);font:inherit;font-size:.92rem;color:var(--inkt);cursor:pointer}
+.hc-knop .icoon{width:22px;height:22px;flex:0 0 auto}
+.hc-knop .schuif{position:relative;width:46px;height:26px;border-radius:13px;border:2px solid #5f6a6d;background:#fff;flex:0 0 auto;transition:background .15s,border-color .15s}
+.hc-knop .schuif::after{content:"";position:absolute;top:3px;left:3px;width:16px;height:16px;border-radius:50%;background:#5f6a6d;transition:transform .15s,background .15s}
+.hc-knop[aria-checked="true"] .schuif{background:var(--groen-donker);border-color:var(--groen-donker)}
+.hc-knop[aria-checked="true"] .schuif::after{transform:translateX(20px);background:#fff}
+
+/* ---------- Thema hoog contrast (WCAG AAA: tekst ≥ 7:1) ---------- */
+html.hoog-contrast{
+  --groen:#004d36; --groen-donker:#004d36; --groen-licht:#ffffff;
+  --inkt:#000000; --inkt-zacht:#222222; --lijn:#000000; --vlak:#ffffff;
+  --fout:#8c1d18; --donker-blok:#000000; --focus:#000000;
+}
+html.hoog-contrast body{background:#fff;color:#000}
+html.hoog-contrast :focus-visible{outline:4px solid #000;outline-offset:3px;box-shadow:0 0 0 7px #ffd400}
+html.hoog-contrast .euro:focus-within{outline:4px solid #000;box-shadow:0 0 0 7px #ffd400}
+html.hoog-contrast .voortgang,html.hoog-contrast .topbalk{background:#fff;border-bottom:2px solid #000}
+html.hoog-contrast .stappen li::before{background:#000}
+html.hoog-contrast .stappen li.klaar::before,html.hoog-contrast .stappen li.actief::before{background:#004d36}
+html.hoog-contrast .stappen .stip{background:#000}
+html.hoog-contrast .stappen li.klaar .stip,html.hoog-contrast .stappen li.actief .stip{background:#004d36}
+html.hoog-contrast .stappen button,html.hoog-contrast .stappen span.lbl{color:#000}
+html.hoog-contrast .pijl,html.hoog-contrast .btn{background:#004d36;border-color:#004d36;color:#fff}
+html.hoog-contrast .btn:hover{background:#000;border-color:#000}
+html.hoog-contrast .btn.sec{background:#fff;color:#004d36;border:3px solid #004d36}
+html.hoog-contrast .btn.sec:hover{background:#fff;color:#000;border-color:#000}
+html.hoog-contrast .paneel,html.hoog-contrast .blok,html.hoog-contrast .afm{border:2px solid #000}
+html.hoog-contrast .euro,html.hoog-contrast select,html.hoog-contrast .datum input{border:2px solid #000}
+html.hoog-contrast .seg{border:2px solid #004d36}
+html.hoog-contrast .seg .knop{border-left-width:2px}
+html.hoog-contrast .seg input:checked+.knop{text-decoration:underline;text-underline-offset:3px}
+html.hoog-contrast .posten div{border-bottom:1px solid #000}
+html.hoog-contrast .posten dd,html.hoog-contrast .blok .w{color:#004d36}
+html.hoog-contrast .blok.groen{background:#004d36;border-color:#004d36;color:#fff}
+html.hoog-contrast .blok.fin{background:#000;border-color:#000}
+html.hoog-contrast .blok.haalbaar .w{color:#fff}
+html.hoog-contrast .afm dt{background:#fff;border-bottom:1px solid #000}
+html.hoog-contrast .uitklap{border-left:4px solid #004d36}
+html.hoog-contrast .melding.fout{background:#fff;border:2px solid #8c1d18;border-left-width:6px;color:#000}
+html.hoog-contrast .melding.let-op{background:#fff;border:2px solid #000;border-left-width:6px;color:#000}
+html.hoog-contrast .melding.info{background:#fff;border:2px solid #004d36;border-left-width:6px}
+html.hoog-contrast a{text-decoration:underline;text-decoration-thickness:2px}
+html.hoog-contrast .kaarten svg [fill="#00d796"]{fill:#004d36}
+html.hoog-contrast .kaarten svg [stroke="#00d796"]{stroke:#004d36}
+html.hoog-contrast .cirkel{border:2px solid #000}
+html.hoog-contrast .cirkel .banden div:first-child{background:#333}
+html.hoog-contrast .cirkel .banden div:last-child{background:#000}
+html.hoog-contrast .hc-knop .schuif{border-color:#000}
+html.hoog-contrast .hc-knop[aria-checked="false"] .schuif::after{background:#000}
+@media (forced-colors:active){.hc-knop .schuif{forced-color-adjust:none;border-color:ButtonText}.hc-knop .schuif::after{background:ButtonText}.hc-knop[aria-checked="true"] .schuif{background:Highlight}}
+
 @media (max-width:900px){
   .grid{grid-template-columns:minmax(0,1fr)}
   .overzicht{grid-template-columns:minmax(0,1fr)}
@@ -208,6 +263,15 @@ dialog::backdrop{background:rgba(0,0,0,.45)}
 <body>
 <a class="skip" href="#inhoud">Direct naar de inhoud</a>
 
+<div class="topbalk">
+  <div class="wrap">
+    <button type="button" class="hc-knop" id="hcKnop" role="switch" aria-checked="false" title="Hoog contrast">
+      <span class="sr-only">Hoog contrast</span>
+      <svg class="icoon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="12" cy="4" r="2.4" fill="currentColor"/><path d="M4 8.2c2.6.8 5.2 1.2 8 1.2s5.4-.4 8-1.2l.6 2c-2.2.7-4.4 1.1-6.6 1.3v3.3l2.4 7.6-2 .6L12 16l-2.4 7-2-.6 2.4-7.6v-3.3c-2.2-.2-4.4-.6-6.6-1.3z" fill="currentColor"/></svg>
+      <span class="schuif" aria-hidden="true"></span>
+    </button>
+  </div>
+</div>
 <header class="voortgang" id="voortgangBalk" hidden>
   <div class="wrap">
     <button type="button" class="pijl" id="pijlTerug" aria-label="Vorige stap">
@@ -536,11 +600,11 @@ dialog::backdrop{background:rgba(0,0,0,.45)}
    CONFIGURATIE — werk deze waarden bij wanneer tarieven/normen wijzigen
    ===================================================================== */
 const CONFIG = {
-  tariefDatum: "23 november 2026",
+  tariefDatum: "19 november 2026",   // datum op munthypotheken.nl/rente; tarieven daar gecontroleerd
   // Rapportstijl: "aa" = MUNT-ontwerp met donkerdere tinten (WCAG 2.1 AA-contrast),
   //               "origineel" = kleuren één-op-één als de MUNT-PDF (haalt AA-contrast niet)
   rapportStijl: "aa",
-  // MUNT-rentesheet (snapshot munt.hypotheekbond.nl, 23-11-2026)
+  // MUNT-rentesheet (gelijk aan munthypotheken.nl/rente, tarieven per 19-11-2026)
   // rentevaste periode (jaar) -> risicoklasse -> rente %
   // klassen: nhg = met NHG, l60 = t/m 60% LTV, l80 = t/m 80%, l90 = t/m 90%, g90 = boven 90%
   rentes: {
@@ -1313,8 +1377,25 @@ function openRapport(){
   return true;
 }
 
+
+/* ============================ Hoog contrast ============================ */
+// Geen localStorage (embed in Google Sites): keuze blijft in het geheugen; voorkeur van het systeem en ?contrast=hoog worden gevolgd.
+function zetHoogContrast(aan, aankondigen){
+  document.documentElement.classList.toggle("hoog-contrast", aan);
+  const k=$("#hcKnop"); k.setAttribute("aria-checked", aan ? "true" : "false");
+  S.hoogContrast = aan;
+  if(aankondigen){ const s=$("#srStatus"); s.textContent=""; setTimeout(()=>{ s.textContent = aan ? "Hoog contrast staat aan" : "Hoog contrast staat uit"; },50); }
+}
+function initHoogContrast(){
+  const q = new URLSearchParams(location.search).get("contrast");
+  const voorkeur = window.matchMedia && window.matchMedia("(prefers-contrast: more)").matches;
+  zetHoogContrast(q==="hoog" || (q!=="normaal" && voorkeur), false);
+  $("#hcKnop").addEventListener("click",()=>zetHoogContrast(!S.hoogContrast, true));
+}
+
 /* ============================ Init ============================ */
 function init(){
+  initHoogContrast();
   bouwRvp();
   $$(".tariefDatum").forEach(e=>e.textContent=CONFIG.tariefDatum);
   $$(".nhgGrens").forEach(e=>e.textContent=eur(CONFIG.nhgKostengrens));
